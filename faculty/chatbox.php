@@ -57,19 +57,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['message'])) {
 									<div class="chat-list">
 								<?php
 
-$currentUserId = 1;
+$currentUserId = 0;
 // Your SQL query
 $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, s.fname, s.lname
           FROM userdata u
           LEFT JOIN student s ON u.userID = s.user_id
-          WHERE u.usertype = 'student'
-
-          UNION
-
-          SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name
-          FROM userdata u
-          LEFT JOIN faculty_info f ON u.userID = f.userID
-          WHERE u.usertype = 'faculty';";
+          WHERE u.usertype = 'student'";
 
 // Execute the query and store the result in $result
 // Assuming you are using mysqli

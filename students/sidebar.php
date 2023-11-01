@@ -16,6 +16,12 @@ include('session.php');
 	<link href="assets/plugins/highcharts/css/highcharts.css" rel="stylesheet" />
 	<link href="assets/plugins/metismenu/css/metisMenu.min.css" rel="stylesheet" />
 	<link href="assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
+		<link href="assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
+	<link href="assets/plugins/datetimepicker/css/classic.css" rel="stylesheet" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link href="assets/plugins/datetimepicker/css/classic.time.css" rel="stylesheet" />
+	<link href="assets/plugins/datetimepicker/css/classic.date.css" rel="stylesheet" />
+	<link rel="stylesheet" href="assets/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.min.css">
 	<!-- loader-->
 	<link href="assets/css/pace.min.css" rel="stylesheet" />
 	<script src="assets/js/pace.min.js"></script>
@@ -93,7 +99,7 @@ include('session.php');
 				</li>
 			
 				 	<li>
-					<a href="#">
+					<a href="consultation.php">
 						<div class="parent-icon"><i class='bx bx-chat' ></i>
 						</div>
 						<div class="menu-title">Consultation</div>

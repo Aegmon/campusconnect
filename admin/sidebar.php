@@ -79,7 +79,7 @@ include('session.php');
 			<li>
 					</li>
 				  	<li>
-					<a href="#">
+					<a href="guidance.php">
 						<div class="parent-icon"><i class='bx bx-group' ></i>
 						</div>
 						<div class="menu-title">Guidance council</div>

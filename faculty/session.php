@@ -91,20 +91,7 @@ $ses_sql_total_students = mysqli_query($con, $query_total_students);
 $total_students = mysqli_fetch_assoc($ses_sql_total_students)['total_students'];
 
 
-$query_consultation = "SELECT status, SUM(hrs) as total_hrs FROM consultation c 
-JOIN section_student ss ON c.stud_id = ss.stud_id
-WHERE ss.section_id = '$section_id' 
-GROUP BY status";
-$ses_sql_consultation = mysqli_query($con, $query_consultation);
 
-$consultation_data = array();
-while($row = mysqli_fetch_assoc($ses_sql_consultation)) {
-    $status = $row['status'];
-    $total_hrs = $row['total_hrs'];
-    array_push($consultation_data, array('name' => $status, 'y' => (int)$total_hrs));
-}
 
-// JSON encode the data for use in the Highcharts chart
-$consultation_json = json_encode($consultation_data);
 ?>
 

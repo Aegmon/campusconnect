@@ -83,7 +83,7 @@ if (isset($_POST['post'])) {
                         <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
                     </div>
                     <div class="form-group mt-3">
-                        <button type="submit" name="post" class="btn btn-primary">Submit</button>
+                        <button type="submit" name="post" class="btn btn-primary">Post</button>
                     </div>
                 </form>
             </div>

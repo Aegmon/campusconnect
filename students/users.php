@@ -527,26 +527,46 @@ include("sidebar.php");
 				<div class="card">
 					<div class="card-body">
 						<div class="table-responsive">
-							<table id="example2" class="table table-striped table-bordered">
-								<thead>
-									<tr>
-										<th>Name</th>
-									
-										<th>Age</th>
-										<th>Message</th>
-									</tr>
-								</thead>
-								<tbody>
-									<!-- <tr>
-										<td>Juan Delacruz</td>
-										<td>Grade 12</td>
-										<td>Tourism</td>
-										<td>15</td>
-										
-									</tr> -->
-									
-								</tfoot>
-							</table>
+						<?php
+
+$query = "SELECT s.fname, s.lname, s.student_number, s.birthdate, sec.grade, st.strand
+          FROM student s
+          JOIN section_student ss ON s.stud_id = ss.stud_id
+          JOIN section sec ON ss.section_id = sec.id
+          JOIN strand st ON sec.strand = st.strand_id where ss.section_id";
+
+$result = $con->query($query);
+
+if ($result && $result->num_rows > 0) {
+    echo '<table id="example2" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Student Number</th>
+                    <th>Grade</th>
+                    <th>Strand</th>
+                    <th>Birthday</th>
+					  
+                </tr>
+            </thead>
+            <tbody>';
+    while ($row = $result->fetch_assoc()) {
+        echo '<tr>
+                <td>' . $row['fname'] . ' ' . $row['lname'] . '</td>
+                <td>' . $row['student_number'] . '</td>
+                <td>' . $row['grade'] . '</td>
+                <td>' . $row['strand'] . '</td>
+                <td>' . $row['birthdate'] . '</td>
+				  
+            </tr>';
+    }
+    echo '</tbody>
+          </table>';
+} else {
+    echo "No data found.";
+}
+
+?>
 						</div>
 					</div>
 				</div>

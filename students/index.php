@@ -52,7 +52,8 @@ if (isset($_POST['post'])) {
 		<!--start page wrapper -->
 		<div class="page-wrapper">
 			<div class="page-content">
-				
+			<div class="row">	
+                	<div class="col-9">	
  <div class="card">
             <div class="card-body">
                 <form action="" method="post">
@@ -65,7 +66,7 @@ if (isset($_POST['post'])) {
                         <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
                     </div>
                     <div class="form-group mt-3">
-                        <button type="submit" name="post" class="btn btn-primary">Submit</button>
+                        <button type="submit" name="post" class="btn btn-primary">Post</button>
                     </div>
                 </form>
             </div>
@@ -101,7 +102,21 @@ if (isset($_POST['post'])) {
     return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
-        $result = $con->query("SELECT * FROM posts");
+        $result = $con->query("SELECT p.*, 
+    CASE 
+        WHEN p.post_from = 'admin' THEN 'Administrator'
+        ELSE COALESCE(
+            NULLIF(CONCAT(s.fname, ' ', NULLIF(s.lname, '')), ' '), 
+            NULLIF(CONCAT(f.first_name, ' ', NULLIF(f.last_name, '')), ' '),
+            s.fname,
+            f.first_name
+        )
+    END AS name 
+FROM posts p 
+LEFT JOIN faculty_info f ON p.user_id = f.userID 
+LEFT JOIN student s ON p.user_id = s.user_id 
+ORDER BY p.post_date DESC;
+");
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $postTitle = $row["post_title"];
@@ -116,7 +131,7 @@ if (isset($_POST['post'])) {
                 if ($postFrom === 'user') {
                     echo '<div style="display: flex; align-items: center; margin-bottom: 10px;">
                             <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                            <h6 class="text-dark m-0">'. $first_name .' '. $last_name .':</h6>
+                            <h6 class="text-dark m-0">'.  $row["name"] .':</h6>
                         </div>';
                 }
                 echo '<h5 class="card-title">' . $postTitle . '</h5>';
@@ -163,7 +178,50 @@ if (isset($_POST['post'])) {
         }
         ?>
 		   </div>
+           	<div class="col-3">	
+ <div class="card">
+       <div class="card-header"> Available for consultation</div>
+            <div class="card-body">
+              
+<?php
+$sql = "SELECT s.fname AS student_first_name, s.lname AS student_last_name, s.image AS student_image
+        FROM student s
+        JOIN consultation c ON s.user_id = c.user_id_host";
+
+$result = $con->query($sql);
+
+if ($result->num_rows > 0) {
+  // Output data of each row
+  while ($row = $result->fetch_assoc()) {
+    echo '
+    <div class="card radius-10">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+        <a type="button" class="position-relative">   
+									
+         <img src="' . $row["student_image"] . '" class="rounded-circle p-1 border" width="90" height="90" alt="Student Image"><span class="position-absolute top-0 start-100 translate-middle badge border border-light rounded-circle bg-success p-2"><span class="visually-hidden">unread messages</span></span>
+        	</a>
+         <div class="flex-grow-1 ms-3">
+            <h5 class="mt-0">' . $row["student_first_name"] . ' ' . $row["student_last_name"] . '</h5>
+          </div>
+        </div>
+      </div>
+    </div>';
+  }
+} else {
+  echo "0 results";
+}
+
+?>
+
+
+                  </div>
+                    </div>
+                 </div>
+              </div>
+                    
 </div>
+
 	<div class="overlay toggle-icon"></div>
 		<!--end overlay-->
 		<!--Start Back To Top Button--> <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>

@@ -1,87 +1,159 @@
 
 <?php
 include("connection.php");
+$error = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     // Handle form submission
-   $first_name = $_POST['first_name'];
+    $first_name = $_POST['first_name'];
     $last_name = $_POST['last_name'];
     $birthdate = $_POST['birthday'];
     $gender = $_POST['gender'];
     $address = $_POST['address'];
     $email = $_POST['email'];
-	$section_id = $_POST['section_id'];
-	    $student_number = $_POST['student_number'];
-    $password = 'pass123';
+    $section_id = $_POST['section_id'];
+    $student_number = $_POST['student_number'];
+    $password =  $_POST['password'];
+    $cpassword =  $_POST['cpassword'];
 
-    // Hash the password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    // Check for empty data fields
+    if (empty($first_name) || empty($last_name) || empty($birthdate) || empty($gender) || empty($address) || empty($email) || empty($section_id) || empty($student_number) || empty($password) || empty($cpassword)) {
+        $error = "Please fill in all the required fields.";
+    } else {
+        // Check if passwords match
+        if ($password !== $cpassword) {
+            $error = "Passwords do not match";
+        } else {
+            // Hash the password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
- 
-    // Image upload handling
-    $image_upload_dir = '../img/'; // Directory where images will be stored
-    $image_name = $_FILES['image']['name'];
-    $image_tmp_name = $_FILES['image']['tmp_name'];
+            // Image upload handling
+            $image_upload_dir = '../img/'; // Directory where images will be stored
+            $image_name = $_FILES['image']['name'];
+            $image_tmp_name = $_FILES['image']['tmp_name'];
 
-    // Check if an image was uploaded
-    if (!empty($image_name)) {
-        $image_extension = pathinfo($image_name, PATHINFO_EXTENSION);
-        $allowed_extensions = array('jpg', 'jpeg', 'png');
+            // Check if an image was uploaded
+            if (!empty($image_name)) {
+                $image_extension = pathinfo($image_name, PATHINFO_EXTENSION);
+                $allowed_extensions = array('jpg', 'jpeg', 'png');
 
-        // Check if the uploaded file has a valid image extension
-        if (in_array($image_extension, $allowed_extensions)) {
-            $image_destination = $image_upload_dir . $image_name;
+                // Check if the uploaded file has a valid image extension
+                if (in_array($image_extension, $allowed_extensions)) {
+                    $image_destination = $image_upload_dir . $image_name;
 
-            // Move the uploaded image to the destination folder
-            if (move_uploaded_file($image_tmp_name, $image_destination)) {
-                // Insert data into 'userdata' table
-        $insert_userdata_query = "INSERT INTO userdata (email, password, usertype) VALUES (?, ?, ?)";
-$usertype = 'student'; // assuming the usertype is hardcoded as 'student'
-$stmt = $con->prepare($insert_userdata_query);
-$stmt->bind_param("sss", $email, $hashed_password, $usertype);
-$stmt->execute();
-  
+                    // Move the uploaded image to the destination folder
+                    if (move_uploaded_file($image_tmp_name, $image_destination)) {
+                        // Insert data into 'userdata' table
+                        $insert_userdata_query = "INSERT INTO userdata (email, password, usertype) VALUES (?, ?, ?)";
+                        $usertype = 'student'; // assuming the usertype is hardcoded as 'student'
+                        $stmt = $con->prepare($insert_userdata_query);
+                        $stmt->bind_param("sss", $email, $hashed_password, $usertype);
+                        $stmt->execute();
+
+                        $userID = $stmt->insert_id;
+
+                        $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, image, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                        $stmt = $con->prepare($insert_student_query);
+                        $stmt->bind_param("sssssssi", $student_number, $first_name, $last_name, $birthdate, $gender, $address, $image_destination, $userID);
+                        $stmt->execute();
+                        $student_id = $stmt->insert_id;
+
+                        $insert_section_student_query = "INSERT INTO section_student (stud_id, section_id) VALUES (?, ?)";
+                        $stmt = $con->prepare($insert_section_student_query);
+                        $stmt->bind_param("ii", $student_id, $section_id);
+                        $stmt->execute();
+                    } else {
+                        $error = "Failed to move the uploaded image.";
+                    }
+                } else {
+                    $error = "Invalid image file format. Allowed formats: jpg, jpeg, png.";
+                }
+            } else {
+                $insert_userdata_query = "INSERT INTO userdata (email, password, usertype) VALUES (?, ?, ?)";
+                $usertype = 'student'; // assuming the usertype is hardcoded as 'student'
+                $stmt = $con->prepare($insert_userdata_query);
+                $stmt->bind_param("sss", $email, $hashed_password, $usertype);
+                $stmt->execute();
+
+                // Get the userID generated for the new user
                 $userID = $stmt->insert_id;
 
-               $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, image, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-$stmt = $con->prepare($insert_student_query);
-$stmt->bind_param("sssssssi", $student_number, $first_name, $last_name, $birthday, $gender, $address, $image_destination, $userID);
-$stmt->execute();
-   $student_id = $stmt->insert_id;
+                $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $con->prepare($insert_student_query);
+                $stmt->bind_param("ssssssi", $student_number, $first_name, $last_name, $birthdate, $gender, $address, $userID);
+                $stmt->execute();
+                $student_id = $stmt->insert_id;
 
-    $insert_section_student_query = "INSERT INTO section_student (stud_id, section_id) VALUES (?, ?)";
-        $stmt = $con->prepare($insert_section_student_query);
-        $stmt->bind_param("ii", $student_id, $section_id); // Assuming you have the student_id from the previous insert operation
-        $stmt->execute();
-            } else {
-                echo "Failed to move the uploaded image.";
+                $insert_section_student_query = "INSERT INTO section_student (stud_id, section_id) VALUES (?, ?)";
+                $stmt = $con->prepare($insert_section_student_query);
+                $stmt->bind_param("ii", $student_id, $section_id);
+                $stmt->execute();
             }
-        } else {
-            echo "Invalid image file format. Allowed formats: jpg, jpeg, png.";
         }
-    } else {
-     
-     $insert_userdata_query = "INSERT INTO userdata (email, password, usertype) VALUES (?, ?, ?)";
-$usertype = 'student'; // assuming the usertype is hardcoded as 'student'
-$stmt = $con->prepare($insert_userdata_query);
-$stmt->bind_param("sss", $email, $hashed_password, $usertype);
-$stmt->execute();
-
-        // Get the userID generated for the new user
-        $userID = $stmt->insert_id;
-
- $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-$stmt = $con->prepare($insert_student_query);
-$stmt->bind_param("ssssssi", $student_number, $first_name, $last_name, $birthday, $gender, $address, $userID);
-$stmt->execute();
-   $student_id = $stmt->insert_id;
-    $insert_section_student_query = "INSERT INTO section_student (stud_id, section_id) VALUES (?, ?)";
-        $stmt = $con->prepare($insert_section_student_query);
-        $stmt->bind_param("ii", $student_id, $section_id); // Assuming you have the student_id from the previous insert operation
-        $stmt->execute();
     }
 
     // Close the database connection
 
+}
+
+require 'google-api/vendor/autoload.php';
+    // Creating new google client instance
+    $client = new Google_Client();
+    
+    // Enter your Client ID
+    $client->setClientId('47067612803-0g6nhm3ti5c8e16e4dk7bk9fl0spb45u.apps.googleusercontent.com');
+    // Enter your Client Secrect
+    $client->setClientSecret('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');
+    // Enter the Redirect URL
+    $client->setRedirectUri('http://localhost/campusconnect/signup.php');
+    // Adding those scopes which we want to get (email & profile Information)
+    $client->addScope("email");
+    $client->addScope("profile");
+   if (isset($_GET['code'])) {
+    session_start();
+    $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
+    if (!isset($token["error"])) {
+        $client->setAccessToken($token['access_token']);
+        // getting profile information
+        $google_oauth = new Google_Service_Oauth2($client);
+        $google_account_info = $google_oauth->userinfo->get();
+        $id = mysqli_real_escape_string($con, $google_account_info->id);
+        $full_name = mysqli_real_escape_string($con, trim($google_account_info->name));
+        $email = mysqli_real_escape_string($con, $google_account_info->email);
+        $profile_pic = mysqli_real_escape_string($con, $google_account_info->picture);
+
+        // Check if the email already exists
+        $check_email_query = "SELECT COUNT(*) as count FROM userdata WHERE email = ?";
+        $check_stmt = $con->prepare($check_email_query);
+        $check_stmt->bind_param("s", $email);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        if ($row['count'] > 0) {
+            // Email already exists
+            $error = "Email already exists!";
+            // Handle the error according to your logic
+        } else {
+            // Email does not exist, proceed with the insertion
+            $insert_userdata_query = "INSERT INTO userdata (email, password, usertype, google_id) VALUES (?, ?, ?, ?)";
+            $usertype = 'student'; // assuming the usertype is hardcoded as 'student'
+            $stmt = $con->prepare($insert_userdata_query);
+            $stmt->bind_param("ssss", $email, $hashed_password, $usertype, $id);
+            $stmt->execute();
+
+            // Get the userID generated for the new user
+            $userID = $stmt->insert_id;
+
+            // Assuming $con is your database connection
+            $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, user_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $con->prepare($insert_student_query);
+            $stmt->bind_param("ssssssis", $student_number, $full_name, $last_name, $birthdate, $gender, $address, $userID, $profile_pic);
+            $stmt->execute();
+            $student_id = $stmt->insert_id;
+            $stud_id =     $student_id;
+            header("location:studentregister.php?stud_id=$stud_id&user_id=$userID");
+        }
+    }
 }
 ?>
 <!doctype html>
@@ -154,7 +226,7 @@ $stmt->execute();
 										</p>
 									</div>
 									<div class="d-grid">
-										<a class="btn my-4 shadow-sm btn-white" href="javascript:;"> <span class="d-flex justify-content-center align-items-center">
+										<a class="btn my-4 shadow-sm btn-white" href="<?php echo $client->createAuthUrl(); ?>"> <span class="d-flex justify-content-center align-items-center">
                           <img class="me-2" src="assets/images/icons/search.svg" width="16" alt="Image Description">
                           <span>Sign Up with Google</span>
 											</span>
@@ -174,9 +246,10 @@ $stmt->execute();
 										  <input type="text" class="form-control" id="inputLastName" name="last_name">
 											</div>
 											<div class="col-12">
-												<label for="inputEmailAddress" class="form-label">Date of Birth</label>
-											        <input type="date" class="form-control" id="inputEmail" name="birthday">
-											</div>
+    <label for="inputEmailAddress" class="form-label">Date of Birth</label>
+    <input type="date" class="form-control" id="inputDate" name="birthday">
+</div>
+
 											<div class="col-12">
 											    <label for="inputEmail" class="form-label">Gender</label>
         <select class="form-select" id="inputGender" name="gender">
@@ -197,7 +270,8 @@ $stmt->execute();
         // Establish a database connection (replace with your credentials)
      
         // Fetch data from the section table
-        $sql = "SELECT id, grade, strand FROM section";
+        $sql = "SELECT * FROM section t1
+        join strand t2 on t1.strand = t2.strand_id";
         $result = $con->query($sql);
 
         // Populate the dropdown with the fetched data
@@ -226,7 +300,17 @@ $stmt->execute();
 												<div class="col-12">
 											    <label for="inputEmail" class="form-label">Email</label>
         <input type="email" class="form-control" id="inputEmail" name="email">
-		        <input type="hidden" class="form-control" id="inputPassword" name="password" value="Pass@123">
+		   
+											</div>
+											<div class="col-12">
+											    <label for="inputEmail" class="form-label">Password</label>
+        <input type="password" class="form-control" id="inputEmail" name="password">
+		     
+											</div>
+												<div class="col-12">
+											    <label for="inputEmail" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" id="inputEmail" name="cpassword">
+		     
 											</div>
 											<div class="col-12">
 												<div class="d-grid">
@@ -234,7 +318,14 @@ $stmt->execute();
 													   <button type="submit" class="btn btn-primary px-5" name="register"><i class='bx bx-user'></i>Sign up</button>
 												</div>
 											</div>
+																		 <?php
+    // Display error message if authentication failed
+    if ($error) {
+        echo '<p style="color: red;">' . $error . '</p>';
+    }
+    ?>
 										</form>
+							
 									</div>
 								</div>
 							</div>
@@ -273,6 +364,19 @@ $stmt->execute();
 			});
 		});
 	</script>
+    <script>
+    const inputDate = document.getElementById('inputDate');
+    const today = new Date().toISOString().split('T')[0];
+    inputDate.setAttribute('max', today);
+
+    inputDate.addEventListener('input', function () {
+        if (this.value >= today) {
+            this.setCustomValidity('Please select a date before today.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
 </body>

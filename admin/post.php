@@ -1,9 +1,6 @@
 
 <?php
 include("sidebar.php");
-
-
-
 ?>
  <?php
 
@@ -83,7 +80,7 @@ if (isset($_POST['post'])) {
                         <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
                     </div>
                     <div class="form-group mt-3">
-                        <button type="submit" name="post" class="btn btn-primary">Submit</button>
+                        <button type="submit" name="post" class="btn btn-primary">Post</button>
                     </div>
                 </form>
             </div>
@@ -119,7 +116,7 @@ if (isset($_POST['post'])) {
     return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
-        $result = $con->query("SELECT * FROM posts");
+        $result = $con->query("SELECT * FROM posts order by post_date desc");
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $postTitle = $row["post_title"];

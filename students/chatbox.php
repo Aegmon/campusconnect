@@ -57,16 +57,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['message'])) {
 									<div class="chat-list">
 								<?php
 
-$currentUserId = 1;
+$currentUserId = 0;
 // Your SQL query
-$query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, s.fname, s.lname
-          FROM userdata u
-          LEFT JOIN student s ON u.userID = s.user_id
-          WHERE u.usertype = 'student'
-
-          UNION
-
-          SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name
+$query = "  SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name
           FROM userdata u
           LEFT JOIN faculty_info f ON u.userID = f.userID
           WHERE u.usertype = 'faculty';";
@@ -107,7 +100,7 @@ if ($result->num_rows > 0) {
         echo '<img src="assets/images/avatars/admin.png" width="42" height="42" class="rounded-circle" alt="" />';
         echo '</div>';
         echo '<div class="flex-grow-1 ms-2">';
-        echo '<h6 class="mb-0 chat-title">' . $row['fname'] . ' ' . $row['lname'] . '</h6>'; // Assuming fname and lname are the fields for first name and last name
+        echo '<h6 class="mb-0 chat-title">' . $row['first_name'] . ' ' . $row['last_name'] . '</h6>'; // Assuming fname and lname are the fields for first name and last name
         echo '<p class="mb-0 chat-msg">message</p>'; // Replace 'message' with the actual message
         echo '</div>';
         echo '<div class="chat-time">' . $row['lastlogin'] . '</div>'; // Assuming lastlogin is the field for the timestamp
@@ -139,8 +132,8 @@ if ($result->num_rows > 0) {
 							<div class="d-flex">
 								<img src="assets/images/avatars/admin.png" width="48" height="48" class="rounded-circle" alt="" />
 								<div class="flex-grow-1 ms-2">
-									<p class="mb-0 chat-time"></p>
-									<p class="chat-left-msg"></p>
+									<p class="mb-0 chat-time">dsadas</p>
+									<p class="chat-left-msg">dsadsa</p>
 								</div>
 							</div>
 						</div>
@@ -150,9 +143,9 @@ if ($result->num_rows > 0) {
     <div class="flex-grow-1 pe-2">
         <form method="post" action="">
             <div class="input-group">
-				   <input type="text" name="receiverId" id="receiverIdField" value=""> <!-- Add this line -->
+				   <input type="hidden" name="receiverId" id="receiverIdField" value=""> <!-- Add this line -->
                 <span class="input-group-text"><i class='bx bx-smile'></i></span>
-                <input type="hidden" class="form-control" name="message" placeholder="Type a message">
+                <input type="text" class="form-control" name="message" placeholder="Type a message">
                 <button type="submit" class="btn btn-primary">Send</button>
             </div>
         </form>
