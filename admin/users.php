@@ -1,77 +1,22 @@
 
 <?php
 include("sidebar.php");
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
     // Handle form submission
-   $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $birthdate = $_POST['birthday'];
-    $gender = $_POST['gender'];
-    $address = $_POST['address'];
-    $email = $_POST['email'];
-	    $student_number = $_POST['student_number'];
-    $password = 'pass123';
+    $user_id = $_POST['user_id'];
 
-    // Hash the password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
- 
-    // Image upload handling
-    $image_upload_dir = '../img/'; // Directory where images will be stored
-    $image_name = $_FILES['image']['name'];
-    $image_tmp_name = $_FILES['image']['tmp_name'];
-
-    // Check if an image was uploaded
-    if (!empty($image_name)) {
-        $image_extension = pathinfo($image_name, PATHINFO_EXTENSION);
-        $allowed_extensions = array('jpg', 'jpeg', 'png');
-
-        // Check if the uploaded file has a valid image extension
-        if (in_array($image_extension, $allowed_extensions)) {
-            $image_destination = $image_upload_dir . $image_name;
-
-            // Move the uploaded image to the destination folder
-            if (move_uploaded_file($image_tmp_name, $image_destination)) {
-                // Insert data into 'userdata' table
-        $insert_userdata_query = "INSERT INTO userdata (email, password, usertype) VALUES (?, ?, ?)";
-$usertype = 'student'; // assuming the usertype is hardcoded as 'student'
-$stmt = $con->prepare($insert_userdata_query);
-$stmt->bind_param("sss", $email, $hashed_password, $usertype);
-$stmt->execute();
-  
-                $userID = $stmt->insert_id;
-
-        
-               $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, image, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-$stmt = $con->prepare($insert_student_query);
-$stmt->bind_param("sssssssi", $student_number, $first_name, $last_name, $birthday, $gender, $address, $image_destination, $userID);
-$stmt->execute();
-  
-            } else {
-                echo "Failed to move the uploaded image.";
-            }
-        } else {
-            echo "Invalid image file format. Allowed formats: jpg, jpeg, png.";
-        }
+    // Insert data into 'userdata' table
+    $insert_userdata_query = "UPDATE `userdata` SET isverify = '1' WHERE userID = ?";
+    $stmt = $con->prepare($insert_userdata_query);
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
     } else {
-     
-     $insert_userdata_query = "INSERT INTO userdata (email, password, usertype) VALUES (?, ?, ?)";
-$usertype = 'student'; // assuming the usertype is hardcoded as 'student'
-$stmt = $con->prepare($insert_userdata_query);
-$stmt->bind_param("sss", $email, $hashed_password, $usertype);
-$stmt->execute();
-
-        // Get the userID generated for the new user
-        $userID = $stmt->insert_id;
-
- $insert_student_query = "INSERT INTO student (student_number, fname, lname, birthdate, gender, address, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-$stmt = $con->prepare($insert_student_query);
-$stmt->bind_param("ssssssi", $student_number, $first_name, $last_name, $birthday, $gender, $address, $userID);
-$stmt->execute();
-  
+        // Error handling
+        echo "Error in the database operation.";
     }
 
-    // Close the database connection
 
 }
 ?>
@@ -95,9 +40,9 @@ $stmt->execute();
 						</nav>
 					</div>
 					<div class="ms-auto">
-						<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
+						<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
   <i class='bx bx-plus'></i> Add Students
-</button>
+</button> -->
 					</div>
 				</div>
 
@@ -130,13 +75,14 @@ $stmt->execute();
 				<div class="card">
 					<div class="card-body">
 						<div class="table-responsive">
-		<?php
+<?php
 
-$query = "SELECT s.fname, s.lname, s.student_number, s.birthdate, sec.grade, st.strand
+$query = "SELECT *
           FROM student s
           JOIN section_student ss ON s.stud_id = ss.stud_id
           JOIN section sec ON ss.section_id = sec.id
-          JOIN strand st ON sec.strand = st.strand_id";
+          JOIN strand st ON sec.strand = st.strand_id
+		  JOIN userdata us ON s.user_id = us.userID";
 
 $result = $con->query($query);
 
@@ -149,7 +95,9 @@ if ($result && $result->num_rows > 0) {
                     <th>Grade</th>
                     <th>Strand</th>
                     <th>Birthday</th>
-					    <th>Action</th>
+                    <th>Email Address</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>';
@@ -160,10 +108,23 @@ if ($result && $result->num_rows > 0) {
                 <td>' . $row['grade'] . '</td>
                 <td>' . $row['strand'] . '</td>
                 <td>' . $row['birthdate'] . '</td>
-				        <td>		<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
-  <i class="bx bx-plus"></i> Accept
-</button></td>
-            </tr>';
+                <td>' . $row['email'] . '</td>';
+                
+        if ($row['isverify'] == 0) {
+            echo '<td>Unverified</td>';
+        } else if ($row['isverify'] == 1) {
+            echo '<td>Verified</td>';
+        } else {
+            echo '<td>Unknown</td>';
+        }
+
+        echo '<td>
+		<form action="" method="post">
+		<input type="hidden" name="user_id"value="' . $row['user_id'] . '">
+		<button type="submit"  name="verify" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
+                <i class="bx bx-plus"></i> Accept
+              </button></td></form>
+              </tr>';
     }
     echo '</tbody>
           </table>';
@@ -172,6 +133,7 @@ if ($result && $result->num_rows > 0) {
 }
 
 ?>
+
 
 
 						</div>

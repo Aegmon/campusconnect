@@ -106,10 +106,10 @@ include('session.php');
 					</a>
 				</li>
 				  	<li>
-					<a href="#">
+					<a href="concern.php">
 						<div class="parent-icon"><i class='bx bx-chat' ></i>
 						</div>
-						<div class="menu-title">Guidance council</div>
+						<div class="menu-title">Student concern</div>
 					</a>
 				</li>
 				 <!-- <li>
@@ -766,7 +766,7 @@ include('session.php');
 							</li> -->
 							<li><a class="dropdown-item" href="#"><i class="bx bx-cog"></i><span>Settings</span></a>
 							</li>
-					]
+					
 							<!-- <li><a class="dropdown-item" href="javascript:;"><i class='bx bx-dollar-circle'></i><span>Earnings</span></a>
 							</li> -->
 							<!-- <li><a class="dropdown-item" href="javascript:;"><i class='bx bx-download'></i><span>Downloads</span></a>

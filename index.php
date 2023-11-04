@@ -23,16 +23,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $row = $result->fetch_assoc();
 
             if (password_verify($password, $row['password'])) {
-                $_SESSION['userID'] = $row['userID']; // Add the userID to the session
-                $_SESSION['login_user'] = $username;
-                if ($row['usertype'] === 'faculty') {
+                if ($row['usertype'] === 'student') {
+                    if ($row['isverify'] == 0) {
+                        $error = "Please wait for the admin to verify your account.";
+                    } else {
+                        $_SESSION['userID'] = $row['userID']; // Add the userID to the session
+                        $_SESSION['login_user'] = $username;
+                        header("location: students/index.php");
+                        exit;
+                    }
+                } else if ($row['usertype'] === 'faculty') {
+                    $_SESSION['userID'] = $row['userID']; // Add the userID to the session
+                    $_SESSION['login_user'] = $username;
                     header("location: faculty/index.php");
                     exit;
-                } else if ($row['usertype'] === 'student') {
-                    header("location: students/index.php");
-                    exit;
                 } else {
-                    // handle other user types here
+                       $_SESSION['userID'] = $row['userID']; // Add the userID to the session
+                    $_SESSION['login_user'] = $username;
+                    header("location: guidancecouncilor/index.php");
                 }
             } else {
                 $error = "Invalid Username or Password.";
@@ -45,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 
 <!doctype html>
 <html lang="en">

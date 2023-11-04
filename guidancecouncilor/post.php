@@ -83,7 +83,7 @@ if (isset($_POST['post'])) {
                         <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
                     </div>
                     <div class="form-group mt-3">
-                        <button type="submit" name="post" class="btn btn-primary">Submit</button>
+                        <button type="submit" name="post" class="btn btn-primary">Post</button>
                     </div>
                 </form>
             </div>
@@ -119,7 +119,20 @@ if (isset($_POST['post'])) {
     return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
-        $result = $con->query("SELECT * FROM posts");
+         $result = $con->query("SELECT p.*, 
+    CASE 
+        WHEN p.post_from = 'admin' THEN 'Administrator'
+        ELSE COALESCE(
+            NULLIF(CONCAT(s.fname, ' ', NULLIF(s.lname, '')), ' '), 
+            NULLIF(CONCAT(f.first_name, ' ', NULLIF(f.last_name, '')), ' '),
+            s.fname,
+            f.first_name
+        )
+    END AS name 
+FROM posts p 
+LEFT JOIN faculty_info f ON p.user_id = f.userID 
+LEFT JOIN student s ON p.user_id = s.user_id where p.isapproved = '1'
+ORDER BY p.post_date DESC");
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $postTitle = $row["post_title"];

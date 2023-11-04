@@ -119,7 +119,7 @@ if (isset($_POST['post'])) {
     return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
-        $result = $con->query("SELECT * FROM posts");
+         $result = $con->query("SELECT * FROM posts where isapproved = '1'order by post_date desc");
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $postTitle = $row["post_title"];

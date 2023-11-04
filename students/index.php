@@ -114,7 +114,7 @@ if (isset($_POST['post'])) {
     END AS name 
 FROM posts p 
 LEFT JOIN faculty_info f ON p.user_id = f.userID 
-LEFT JOIN student s ON p.user_id = s.user_id 
+LEFT JOIN student s ON p.user_id = s.user_id where p.isapproved = '1'
 ORDER BY p.post_date DESC;
 ");
         if ($result->num_rows > 0) {
