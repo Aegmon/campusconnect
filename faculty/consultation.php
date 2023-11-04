@@ -2,56 +2,14 @@
 <?php
 include("sidebar.php");
 
-require '../google-api/vendor/autoload.php';
-
-$client = new Google_Client();
-$client->setApplicationName('Google Calendar API PHP');
-$client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
-$client->setAuthConfig('../credentials.json');
-$client->setAccessType('offline');
-$service = new Google_Service_Calendar($client);
-
-$calendarId = 'pinedabennor@gmail.com';
-
-$optParams = array(
-  'maxResults' => 1,
-  'orderBy' => 'startTime',
-  'singleEvents' => true,
-  'timeMin' => date('c'),
-  'q' => 'Google Meet' // Use this to filter events containing 'Google Meet'
-);
-
-$results = $service->events->listEvents($calendarId, $optParams);
-
-$link = "";
-$start = "";
-
-if (empty($results->getItems())) {
-    echo 'No upcoming events found.';
-} else {
-    foreach ($results->getItems() as $event) {
-        $link = $event->getHangoutLink();
-        $start = $event->getStart()->dateTime;
-    }
-}
 if (isset($_POST['register'])) {
     $start_time = $_POST['start'];
     $end_time = $_POST['end'];
+   $date = $_POST['date'];
+    $no_stud = $_POST['no_stud'];
+   
 
-    // Assuming $service and $optParams are properly set as per your requirements
-    $results = $service->events->listEvents($calendarId, $optParams);
-
-    $link = "";
-    foreach ($results->getItems() as $event) {
-        $hangoutLink = $event->getHangoutLink();
-        if (!empty($hangoutLink)) {
-            $link = $hangoutLink;
-            break; // Assuming you want the link from the first event
-        }
-    }
-
-    // Perform SQL query to insert data into the database
-    $sql = "INSERT INTO consultation (user_id_host, start_time, end_time, link) VALUES ('$user_check', '$start_time', '$end_time', '$link')";
+    $sql = "INSERT INTO `ins_consult`(`faculty_id`, `date`, `starttime`, `endtime`, `slots`) VALUES ('$faculty_id', '$date', '$start_time', '$end_time', '$no_stud')";
 
     if ($con->query($sql) === TRUE) {
         echo "New record created successfully";
@@ -99,17 +57,23 @@ if (isset($_POST['register'])) {
 													</div>
 													<div class="modal-body">
                               <form class="row g-3" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>" enctype="multipart/form-data">
-
+  <div class="col-md-12">
+        <label for="inputAddress" class="form-label">Date</label>
+        <input class="result form-control" type="date" name="date" placeholder="Date Picker..." >
+    </div>
     <div class="col-md-12">
         <label for="inputAddress" class="form-label">Start Time</label>
-        <input class="result form-control" type="text" id="date-time" name="start" placeholder="Date Picker..." value="<?php echo $start; ?>">
+        <input class="result form-control" type="time" name="start" placeholder="Date Picker..." ">
     </div>
     <div class="col-md-12">
         <label for="inputAddress" class="form-label">End time</label>
-        <input class="result form-control" type="text" id="date-time" name="end" placeholder="Date Picker...">
+        <input class="result form-control" type="time"name="end" placeholder="Date Picker...">
     </div>
    
-
+  <div class="col-md-12">
+        <label for="inputAddress" class="form-label">Number of Students</label>
+        <input class="result form-control" type="number"name="no_stud" placeholder="Enter Number Of Students">
+    </div>
     <div class="col-12">
         <button type="submit" class="btn btn-primary px-5" name="register">Add</button>
     </div>
@@ -146,9 +110,9 @@ if (isset($_POST['register'])) {
 						<div class="table-responsive">
 
 <?php
-$query = "SELECT s.fname, s.lname, c.status
-          FROM student s
-          JOIN consultation c ON s.user_id = c.user_id_host Where c.user_id_host  = '$user_check'";
+$query = "SELECT *
+          FROM ins_consult
+         Where faculty_id  = '$faculty_id'";
 
 $result = $con->query($query);
 
@@ -156,15 +120,19 @@ if ($result && $result->num_rows > 0) {
     echo '<table id="example2" class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+					<th>End Time</th>
+				<th>Number of Students</th>
                 </tr>
             </thead>
             <tbody>';
     while ($row = $result->fetch_assoc()) {
         echo '<tr>
-                <td>' . $row['fname'] . ' ' . $row['lname'] . '</td>
-                <td>' . $row['status'] . '</td>
+                   <td>' . $row['date'] . '</td>
+                <td>' . $row['starttime'] . '</td>
+				  <td>' . $row['endtime'] . '</td>
+				  		  <td>' . $row['slots'] . '</td>
             </tr>';
     }
     echo '</tbody>

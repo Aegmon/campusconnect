@@ -2,65 +2,6 @@
 <?php
 include("sidebar.php");
 
-require '../google-api/vendor/autoload.php';
-
-$client = new Google_Client();
-$client->setApplicationName('Google Calendar API PHP');
-$client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
-$client->setAuthConfig('../credentials.json');
-$client->setAccessType('offline');
-$service = new Google_Service_Calendar($client);
-
-$calendarId = 'pinedabennor@gmail.com';
-
-$optParams = array(
-  'maxResults' => 1,
-  'orderBy' => 'startTime',
-  'singleEvents' => true,
-  'timeMin' => date('c'),
-  'q' => 'Google Meet' // Use this to filter events containing 'Google Meet'
-);
-
-$results = $service->events->listEvents($calendarId, $optParams);
-
-$link = "";
-$start = "";
-
-if (empty($results->getItems())) {
-    echo 'No upcoming events found.';
-} else {
-    foreach ($results->getItems() as $event) {
-        $link = $event->getHangoutLink();
-        $start = $event->getStart()->dateTime;
-    }
-}
-if (isset($_POST['register'])) {
-    $start_time = $_POST['start'];
-    $end_time = $_POST['end'];
-
-    // Assuming $service and $optParams are properly set as per your requirements
-    $results = $service->events->listEvents($calendarId, $optParams);
-
-    $link = "";
-    foreach ($results->getItems() as $event) {
-        $hangoutLink = $event->getHangoutLink();
-        if (!empty($hangoutLink)) {
-            $link = $hangoutLink;
-            break; // Assuming you want the link from the first event
-        }
-    }
-
-    // Perform SQL query to insert data into the database
-    $sql = "INSERT INTO consultation (user_id_host, start_time, end_time, link) VALUES ('$user_check', '$start_time', '$end_time', '$link')";
-
-    if ($con->query($sql) === TRUE) {
-        echo "New record created successfully";
-    } else {
-        echo "Error: " . $sql . "<br>" . $con->error;
-    }
-}
-
-
 
 
 ?>
@@ -84,9 +25,9 @@ if (isset($_POST['register'])) {
 					</div>
 					<div class="ms-auto">
 						<div class="btn-group">
-						<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
+						<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
   <i class='bx bx-plus'></i> Add Consultation
-</button>
+</button> -->
 
 
 <!-- Modal -->
@@ -136,48 +77,42 @@ if (isset($_POST['register'])) {
 
 				<!-- <h6 class="mb-0 text-uppercase">DataTable Import</h6> -->
 				<hr/>
-				<div class="card">
+				<div class="card p-4">
                       <div class="col-md-12">
-   
 
-
-    </div>
-					<div class="card-body">
-						<div class="table-responsive">
-
-<?php
-$query = "SELECT s.fname, s.lname, c.status
-          FROM student s
-          JOIN consultation c ON s.user_id = c.user_id_host Where c.user_id_host  = '$user_check'";
+<div class="row row-cols-1 row-cols-lg-2 row-cols-xl-4">
+	   <?php
+$query = "SELECT *
+          FROM ins_consult t1 
+		  JOIN faculty_info t2 ON t1.faculty_id = t2.faculty_id
+        ";
 
 $result = $con->query($query);
 
-if ($result && $result->num_rows > 0) {
-    echo '<table id="example2" class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>';
-    while ($row = $result->fetch_assoc()) {
-        echo '<tr>
-                <td>' . $row['fname'] . ' ' . $row['lname'] . '</td>
-                <td>' . $row['status'] . '</td>
-            </tr>';
-    }
-    echo '</tbody>
-          </table>';
-} else {
-    echo "No data found.";
-}
-?>
+    while ($row = $result->fetch_assoc()) {?>
+					<div class="col">
+						<div class="card radius-15 bg-primary">
+							<div class="card-body text-center">
+								<div class="p-4 radius-15">
+									<img src="assets/images/avatars/admin.png" width="110" height="110" class="rounded-circle shadow p-1 bg-white" alt="">
+									<h5 class="mb-0 mt-5 text-white"><?php echo $row['first_name'].' '.$row['last_name'];?></h5>
+									<p class="mb-3 text-white">Faculty</p>
+									<p class="mb-3 text-white">Date: <?php echo $row['date'];?></p>
 
 
-
-
+							<p class="mb-3 text-white">Time: <?php echo date("g:i a", strtotime($row['starttime'])) . ' - ' . date("g:i a", strtotime($row['endtime'])); ?></p>
+	                       <p class="mb-3 text-white">Available Slots: <?php echo $row['slots'];?></p>
+									<div class="d-grid"> <a href="#" class="btn btn-white radius-15">Contact Me</a>
+									</div>
+								</div>
+							</div>
 						</div>
+					</div>
+				<?php }?>
+  </div>
+    </div>
+					<div class="card-body">
+				
 					</div>
 				</div>
 			</div>

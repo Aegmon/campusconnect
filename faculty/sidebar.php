@@ -99,7 +99,13 @@ include('session.php');
 						<div class="menu-title">Post</div>
 					</a>
 				</li>
-				 
+				 <li>
+					<a href="consultation.php" >
+						<div class="parent-icon"><i class='bx bx-headphone' ></i>
+						</div>
+						<div class="menu-title">Consultation</div>
+					</a>
+				</li>
 				 <!-- <li>
 					<a href="javascript:;" class="has-arrow">
 						<div class="parent-icon"><i class='bx bx-group' ></i>
