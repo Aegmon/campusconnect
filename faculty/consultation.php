@@ -72,7 +72,9 @@ if (isset($_POST['register'])) {
    
   <div class="col-md-12">
         <label for="inputAddress" class="form-label">Number of Students</label>
-        <input class="result form-control" type="number"name="no_stud" placeholder="Enter Number Of Students">
+<input class="result form-control" type="number" name="no_stud" placeholder="Enter Number Of Students"  min="1" max="3" pattern="[1-3]" title="Only enter 1, 2, or 3">
+
+
     </div>
     <div class="col-12">
         <button type="submit" class="btn btn-primary px-5" name="register">Add</button>

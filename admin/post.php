@@ -72,11 +72,11 @@ if (isset($_POST['post'])) {
             <div class="card-body">
                 <form action="" method="post">
                     <div class="form-group">
-                        <label for="postTitle">Post Title</label>
+                        <label for="postTitle">Title</label>
                         <input type="text" class="form-control" id="postTitle" name="postTitle" required>
                     </div>
                     <div class="form-group">
-                        <label for="postContent">Post Content</label>
+                        <label for="postContent">Post Announcement</label>
                         <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
                     </div>
                     <div class="form-group mt-3">

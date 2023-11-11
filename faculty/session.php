@@ -13,7 +13,7 @@ $user_check = $_SESSION['userID'];
 $query_faculty_info = "SELECT * FROM faculty_info WHERE userID='$user_check'";
 $ses_sql_faculty_info = mysqli_query($con, $query_faculty_info);
 $faculty_info = mysqli_fetch_assoc($ses_sql_faculty_info);
-
+$currentUserId = $_SESSION['userID'];
 // Variables for faculty info
 $faculty_id = $faculty_info['faculty_id'];
 $userID = $faculty_info['userID'];

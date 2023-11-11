@@ -194,12 +194,12 @@ if ($result->num_rows > 0) {
   // Output data of each row
   while ($row = $result->fetch_assoc()) {
     echo '
-    <div class="card radius-10">
+    <div class="card radius">
       <div class="card-body">
         <div class="d-flex align-items-center">
         <a type="button" class="position-relative">   
 									
-         <img src="' . $row["student_image"] . '" class="rounded-circle p-1 border" width="90" height="90" alt="Student Image"><span class="position-absolute top-0 start-100 translate-middle badge border border-light rounded-circle bg-success p-2"><span class="visually-hidden">unread messages</span></span>
+         <img src="' . $row["student_image"] . '" class="rounded-circle p-1 border" width="90" height="90" alt="Student Image">
         	</a>
          <div class="flex-grow-1 ms-3">
             <h5 class="mt-0">' . $row["student_first_name"] . ' ' . $row["student_last_name"] . '</h5>

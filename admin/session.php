@@ -49,7 +49,8 @@ $ses_sql_total_userdata = mysqli_query($con, $query_total_userdata);
 // Fetching the count
 $total_userdata = mysqli_fetch_assoc($ses_sql_total_userdata)['total_userdata'];
 // Query to get the total number of students in a specific section
-$query_total_students = "SELECT COUNT(*) as total_students FROM section_student";
+$query_total_students = "SELECT COUNT(*) as total_students FROM student s 
+JOIN userdata us ON s.user_id = us.userID where us.isverify = '1'";
 $ses_sql_total_students = mysqli_query($con, $query_total_students);
 $total_students = mysqli_fetch_assoc($ses_sql_total_students)['total_students'];
 

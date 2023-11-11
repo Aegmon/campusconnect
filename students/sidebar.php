@@ -37,7 +37,7 @@ include('session.php');
 	<link rel="stylesheet" href="assets/css/dark-theme.css" />
 	<link rel="stylesheet" href="assets/css/semi-dark.css" />
 	<link rel="stylesheet" href="assets/css/header-colors.css" />
-	<title>Campus Connect | Faculty</title>
+	<title>Campus Connect | Student</title>
 </head>
 
 <body>
@@ -74,7 +74,8 @@ include('session.php');
 					</a>
 				</li>
            
-		
+	
+           
 				 	<!-- <li>
 					<a href="faculty.php">
 						<div class="parent-icon"><i class='bx bx-group' ></i>
@@ -98,18 +99,18 @@ include('session.php');
 					</a>
 				</li>
 			
-				 	<li>
+				 	<!-- <li>
 					<a href="consultation.php">
 						<div class="parent-icon"><i class='bx bx-chat' ></i>
 						</div>
 						<div class="menu-title">Consultation</div>
 					</a>
-				</li>
-				  	<li>
-					<a href="concern.php">
-						<div class="parent-icon"><i class='bx bx-chat' ></i>
+				</li> -->
+					<li>
+					<a href="profile.php">
+						<div class="parent-icon"><i class='bx bx-cog' ></i>
 						</div>
-						<div class="menu-title">Student concern</div>
+						<div class="menu-title">Edit Profile</div>
 					</a>
 				</li>
 				 <!-- <li>
@@ -752,7 +753,7 @@ include('session.php');
 								</div>
 							</li>
 						</ul> -->
-					</div>
+		
 				<div class="user-box dropdown">
 						<a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 							<img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar">
@@ -766,7 +767,8 @@ include('session.php');
 							</li> -->
 							<li><a class="dropdown-item" href="#"><i class="bx bx-cog"></i><span>Settings</span></a>
 							</li>
-					
+							<li><a class="dropdown-item" href="dashboard.php"><i class='bx bx-home-circle'></i><span>Dashboard</span></a>
+							</li>
 							<!-- <li><a class="dropdown-item" href="javascript:;"><i class='bx bx-dollar-circle'></i><span>Earnings</span></a>
 							</li> -->
 							<!-- <li><a class="dropdown-item" href="javascript:;"><i class='bx bx-download'></i><span>Downloads</span></a>

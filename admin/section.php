@@ -149,7 +149,7 @@ if (isset($_POST['register'])) {
 // Assuming you have a database connection ($con) already established
 
 // Create a SELECT query to fetch data from the "faculty_info," "section," and "strand" tables using INNER JOINs
-$select_query = "SELECT faculty_info.first_name, faculty_info.last_name, section.strand, section.grade, strand.strand AS strand_name
+$select_query = "SELECT faculty_info.first_name, faculty_info.last_name, section.strand, section.grade, strand.strand AS strand_name,section.id
                  FROM faculty_info
                  INNER JOIN section ON faculty_info.faculty_id = section.instructor
                  INNER JOIN strand ON section.strand = strand.strand_id";
@@ -177,7 +177,7 @@ if ($result) {
         echo '<td>' . $row['first_name'] . ' ' . $row['last_name'] . '</td>';
         echo '<td> Grade-'. $row['grade'] . '</td>';
         echo '<td>' . $row['strand_name'] . '</td>';
-      echo '<td><a href="viewstudentsection.php" class="btn btn-primary btn-sm">View</a></td>';
+      echo '<td><a href="viewstudentsection.php?id=' . $row['id'] . '" class="btn btn-primary btn-sm">View</a></td>';
         echo '</tr>';
     }
 

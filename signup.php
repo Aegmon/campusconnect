@@ -312,6 +312,39 @@ require 'google-api/vendor/autoload.php';
         <input type="password" class="form-control" id="inputEmail" name="cpassword">
 		     
 											</div>
+                                            	<div class="col-12">
+												<div class="form-check form-switch">
+													<input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" required>
+												<a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">I read and agree to Terms & Conditions</a>
+
+<!-- Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms & Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+      <div class="modal-body">
+<p ><strong>General Terms and Condition</strong></p>
+<p style="text-indent: 50px;">These are the Terms and Conditions governing the use of Campus Connect website and the agreement that operates between you and the website. These Terms and Conditions set out the rights and obligations of all users regarding the use of the website. Your access to and use of the website is conditioned on. Your acceptance of and compliance with these Terms and Conditions. These Terms and Conditions apply to all users’ access or use the website. By accessing or using the website you agree to be bound by these Terms and Conditions.</p>
+<p style="text-indent: 50px;"> If you disagree with any part of these Terms and Conditions then you may not access the website. Your access to and use of the website is also conditioned on your acceptance of and compliance with the Privacy Policy of the website.</p>
+ <p style="text-indent: 50px;"> Our Privacy Policy describes our policies and procedures on the collection, use and disclosure of your personal information when you use the website and tells you about your privacy rights and how the law protects you. Please read our Privacy Policy carefully before using our website.</p>
+<p class="mt-5"><strong>User Account</strong></p>
+
+<p style="text-indent: 50px;">When you create an account with Us, You must provide us information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our service. </p>
+
+<p style="text-indent: 50px;">You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password, whether your password is with Our Service or a Third-Party Social Media Service. </p>
+<p style="text-indent: 50px;">You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account. You may not use as a username the name of another person or entity or that is not lawfully available for use, a name or trademark that is subject to any rights of another person or entity other than you without appropriate authorization</p>
+<p class="mt-5"><strong>Content </strong></p>
+<p style="text-indent: 50px;">Our Service allows you to post content. You are responsible for the Content that you post to the Service, including its legality, reliability, and appropriateness. By posting Content to the Service, You grant us the right and license to use, modify, publicly perform, publicly display, reproduce, and distribute such Content on and through the Service.</p>
+
+      </div>
+        </div>
+    </div>
+</div>
+												</div>
+											</div>
 											<div class="col-12">
 												<div class="d-grid">
 												

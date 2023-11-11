@@ -1,9 +1,15 @@
 
 <?php
 include("sidebar.php");
+$section_id = $_GET['id'];
 
+$select_query = "SELECT *
+                 FROM section
+                 INNER JOIN strand ON section.strand = strand.strand_id WHERE section.id = '$section_id'";
 
-
+// Execute the query
+$result = $con->query($select_query);
+$row = $result->fetch_assoc();
 ?>
         
         
@@ -19,110 +25,15 @@ include("sidebar.php");
 							<ol class="breadcrumb mb-0 p-0">
 								<li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
 								</li>
-								<li class="breadcrumb-item active" aria-current="page">Grade-12 TOURISM</li>
+								<li class="breadcrumb-item active" aria-current="page">Grade-<?php echo $row['grade'];?> <?php echo $row['strand'];?></li>
 							</ol>
 						</nav>
 					</div>
-					<div class="ms-auto">
-						<!-- <div class="btn-group">
-									<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
-  <i class='bx bx-plus'></i> Add Section
-</button> -->
-
-
-<!-- Modal -->
-	<div class="modal fade" id="exampleVerticallycenteredModal" tabindex="-1" aria-hidden="true">
-											<div class="modal-dialog modal-dialog-centered">
-												<div class="modal-content">
-													<div class="modal-header">
-														<h5 class="modal-title">Add Section</h5>
-														<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-													</div>
-													<div class="modal-body">
-  <form class="row g-3" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>" enctype="multipart/form-data">
-
-
-  
-    <div class="col-md-12">
-        <label for="inputEmail" class="form-label">Grade</label>
-        <select class="form-select" id="inputGender" name="grade">
-           <option value="11">Grade 11</option>
-            <option value="12">Grade 12</option>
-        </select>
-    </div>
-     <div class="col-md-12">
-        <label for="inputEmail" class="form-label">Strand</label>
-        <select class="form-select" id="inputGender" name="strand">
-            <option value="">Select a Strand</option>
-                 <?php
-            
-                    $query = "SELECT strand_id, strand FROM strand";
-                    $result = mysqli_query($con, $query);
-
-                    if ($result) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $strand_id = $row["strand_id"];
-                            $strand = $row["strand"];
-                            echo "<option value='$strand_id'>$strand</option>";
-                        }
-                    }
-
-      
-                    ?> 
-        </select>
-    </div>
-     <div class="col-md-12">
-        <label for="inputEmail" class="form-label">Instructor</label>
-       
-             <select class="form-select" id="inputGender" name="faculty">
-               <option value="">Select Instructor</option>
-                 <?php
-            
-                    $query = "SELECT * FROM faculty_info";
-                    $result = mysqli_query($con, $query);
-
-                    if ($result) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $fuculty_id = $row["faculty_id"];
-                            $fname = $row["first_name"];
-                               $lname = $row["last_name"];
-                            echo "<option value='$fuculty_id'>$fname $lname</option>";
-                        }
-                    }
-
-      
-                    ?> 
-        </select>
-       
-    </div>
-    <div class="col-12">
-        <button type="submit" class="btn btn-primary px-5" name="register">Add</button>
-    </div>
-</form>
-
-                                                 
-                                                    </div>
-													<div class="modal-footer">
-														<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-										
-													</div>
-												</div>
-											</div>
-										</div>
-<!-- Modal End -->
-
-
-						</div>
+				
 					</div>
 				</div>
-				<!--end breadcrumb-->
-				<div class="col" id="success-notification" style="display: none;">
-    <div class="alert alert-success" role="alert">
-        <i class="bx bx-check-circle"></i> Registration Successful!
-    </div>
-</div>
 
-				<!-- <h6 class="mb-0 text-uppercase">DataTable Import</h6> -->
+
 				<hr/>
 				<div class="card">
 					<div class="card-body">
@@ -133,7 +44,7 @@ $query = "SELECT s.fname, s.lname, s.student_number, s.birthdate, sec.grade, st.
           FROM student s
           JOIN section_student ss ON s.stud_id = ss.stud_id
           JOIN section sec ON ss.section_id = sec.id
-          JOIN strand st ON sec.strand = st.strand_id";
+          JOIN strand st ON sec.strand = st.strand_id WHERE ss.section_id = '$section_id'";
 
 $result = $con->query($query);
 

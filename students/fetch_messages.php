@@ -1,7 +1,7 @@
 <?php
-include('../connection.php');
+include('session.php');
 
-$currentUserId = 1; // Replace this with the appropriate current user ID
+
 
 // Check if the receiverId is set and not empty
 if (isset($_POST['receiverId']) && !empty($_POST['receiverId'])) {
@@ -19,10 +19,18 @@ if (isset($_POST['receiverId']) && !empty($_POST['receiverId'])) {
 
             // Determine the alignment of the message
             $alignment = ($senderId == $currentUserId) ? 'rightside' : 'leftside';
+    $calignment = ($senderId == $currentUserId) ? 'right' : 'left';
+            // Display the user avatar based on the senderId
+            $avatar = ($senderId == $currentUserId) ? 'avatar-3.png' : 'avatar-4.png';
 
-            // Echo the message with the appropriate alignment
+            // Echo the message with the appropriate alignment and avatar
             echo "<div class='chat-content-$alignment'>";
-            echo "<p>$messageText</p>"; // Display the message text
+            echo "<div class='d-flex'>";
+     
+            echo "<div class='flex-grow-1 ms-2'>";
+            echo "<p class='chat-$calignment-msg'>$messageText</p>"; // Display the message text
+            echo '</div>';
+            echo '</div>';
             echo '</div>';
         }
     } else {
@@ -35,3 +43,6 @@ if (isset($_POST['receiverId']) && !empty($_POST['receiverId'])) {
 // Close the database connection
 $con->close();
 ?>
+
+
+					
