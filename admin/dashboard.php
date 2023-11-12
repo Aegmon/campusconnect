@@ -166,33 +166,73 @@ if ($result->num_rows > 0) {
 					    	  <div class="row">
 								    <div class="col-12">
 										<div class="card">
-					<div class="card-body">
+												<div class="card-header">
+													Recent Consultations</div>
+											
+				<div class="card-body">
 						<div class="table-responsive">
-							<table id="example2" class="table table-striped table-bordered">
-								<thead>
-									<tr>
-										<th>Date</th>
-										<th>Name</th>
-										<th>Section</th>
-										<th>Instructor</th>
-										<th>Status</th>
-										<th>Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>October 12,2023</td>
-										<td>Juan tamad</td>
-										<td>Grade-12 Tourism</td>
-										<td>Juan Delacruz</td>
-										<td>	<span class="badge bg-success">Completed</span></td>
-										<td>	<button type="button" class="btn btn-sml btn-primary">View
-										</button></td>
-									</tr>
-							
-								</tbody>
-							
-							</table>
+
+<?php
+$query = "SELECT * FROM ins_consult ic 
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id
+JOIN consultation c ON c.ins_c_id = ic.ins_c_id 
+JOIN student s ON c.stud_id = s.stud_id ORDER BY ic.date desc";
+
+$result = $con->query($query);
+
+if ($result && $result->num_rows > 0) {
+    echo '<table id="example2" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+				    <th>Faculty</th>
+					  <th>Student</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+					<th>End Time</th>
+		
+					<th>Status</th>
+                </tr>
+            </thead>
+            <tbody>';
+while ($row = $result->fetch_assoc()) {
+    $formattedDate = date("F j, Y", strtotime($row['date']));
+    $formattedStartTime = date("h:i A", strtotime($row['starttime']));
+    $formattedEndTime = date("h:i A", strtotime($row['endtime']));
+
+    echo '<tr>
+       <td>' . $row['first_name'] . ' ' . $row['last_name'] . '</td>
+	        <td>' . $row['fname'] . ' ' . $row['lname'] . '</td>
+       <td>' . $formattedDate . '</td>
+       <td>' . $formattedStartTime . '</td>
+       <td>' . $formattedEndTime . '</td>
+       <td>';
+
+    $status = $row['status'];
+
+    if ($status == 'completed') {
+        echo '<span class="badge bg-success">Completed</span>';
+    } elseif ($status == 'pending') {
+        echo '<span class="badge bg-warning">Pending</span>';
+    } else {
+   echo '<span class="badge bg-danger">Rejected</span>';
+      
+    }
+
+    echo '</td>
+    </tr>';
+}
+
+
+    echo '</tbody>
+          </table>';
+} else {
+    echo "No data found.";
+}
+?>
+
+
+
+
 						</div>
 					</div>
 				</div>

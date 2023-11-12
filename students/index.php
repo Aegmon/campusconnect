@@ -7,7 +7,7 @@ include("sidebar.php");
 if (isset($_POST['consult'])) {
   
     $ins_c_id = $_POST['ins_c_id'];
-    $stmt = $con->prepare("INSERT INTO consultation (stud_id, inc_c_id) VALUES (?, ?)");
+    $stmt = $con->prepare("INSERT INTO consultation (stud_id, ins_c_id) VALUES (?, ?)");
    
     $stmt->bind_param("ii", $student_id, $ins_c_id);
 
