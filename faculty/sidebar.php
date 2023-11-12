@@ -92,13 +92,13 @@ include('session.php');
 					</a>
 				</li>
 			
-				 	<li>
+				 	<!-- <li>
 					<a href="post.php">
 						<div class="parent-icon"><i class='bx bx-chat' ></i>
 						</div>
 						<div class="menu-title">Post</div>
 					</a>
-				</li>
+				</li> -->
 				 <li>
 					<a href="consultation.php" >
 						<div class="parent-icon"><i class='bx bx-headphone' ></i>

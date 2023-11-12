@@ -77,44 +77,71 @@ include("sidebar.php");
 
 				<!-- <h6 class="mb-0 text-uppercase">DataTable Import</h6> -->
 				<hr/>
-				<div class="card p-4">
-                      <div class="col-md-12">
+				<div class="card">
+			<div class="card-body">
+						<div class="table-responsive">
 
-<div class="row row-cols-1 row-cols-lg-2 row-cols-xl-4">
-	   <?php
-$query = "SELECT *
-          FROM ins_consult t1 
-		  JOIN faculty_info t2 ON t1.faculty_id = t2.faculty_id
-        ";
+<?php
+$query = "SELECT * FROM ins_consult ic 
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id
+JOIN consultation c ON c.ins_c_id = ic.ins_c_id WHERE c.stud_id = '$student_id' ";
 
 $result = $con->query($query);
 
-    while ($row = $result->fetch_assoc()) {?>
-					<div class="col">
-						<div class="card radius-15 bg-primary">
-							<div class="card-body text-center">
-								<div class="p-4 radius-15">
-									<img src="assets/images/avatars/admin.png" width="110" height="110" class="rounded-circle shadow p-1 bg-white" alt="">
-									<h5 class="mb-0 mt-5 text-white"><?php echo $row['first_name'].' '.$row['last_name'];?></h5>
-									<p class="mb-3 text-white">Faculty</p>
-									<p class="mb-3 text-white">Date: <?php echo $row['date'];?></p>
+if ($result && $result->num_rows > 0) {
+    echo '<table id="example2" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+				    <th>Faculty</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+					<th>End Time</th>
+		
+					<th>Status</th>
+                </tr>
+            </thead>
+            <tbody>';
+while ($row = $result->fetch_assoc()) {
+    $formattedDate = date("F j, Y", strtotime($row['date']));
+    $formattedStartTime = date("h:i A", strtotime($row['starttime']));
+    $formattedEndTime = date("h:i A", strtotime($row['endtime']));
+
+    echo '<tr>
+       <td>' . $row['first_name'] . ' ' . $row['last_name'] . '</td>
+       <td>' . $formattedDate . '</td>
+       <td>' . $formattedStartTime . '</td>
+       <td>' . $formattedEndTime . '</td>
+       <td>';
+
+    $status = $row['status'];
+
+    if ($status == 'completed') {
+        echo '<span class="badge bg-success">Completed</span>';
+    } elseif ($status == 'pending') {
+        echo '<span class="badge bg-warning">Pending</span>';
+    } else {
+   echo '<span class="badge bg-danger">Rejected</span>';
+        echo 'Other Status';
+    }
+
+    echo '</td>
+    </tr>';
+}
 
 
-							<p class="mb-3 text-white">Time: <?php echo date("g:i a", strtotime($row['starttime'])) . ' - ' . date("g:i a", strtotime($row['endtime'])); ?></p>
-	                       <p class="mb-3 text-white">Available Slots: <?php echo $row['slots'];?></p>
-									<div class="d-grid"> <a href="#" class="btn btn-white radius-15">Contact Me</a>
-									</div>
-								</div>
-							</div>
+    echo '</tbody>
+          </table>';
+} else {
+    echo "No data found.";
+}
+?>
+
+
+
+
 						</div>
 					</div>
-				<?php }?>
-  </div>
-    </div>
-					<div class="card-body">
-				
-					</div>
-				</div>
+						</div>
 			</div>
 		</div>
 		<!--end page wrapper -->

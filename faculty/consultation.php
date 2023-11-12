@@ -126,6 +126,7 @@ if ($result && $result->num_rows > 0) {
                     <th>Start Time</th>
 					<th>End Time</th>
 				<th>Number of Students</th>
+					<th>Status</th>
                 </tr>
             </thead>
             <tbody>';
@@ -135,6 +136,7 @@ if ($result && $result->num_rows > 0) {
                 <td>' . $row['starttime'] . '</td>
 				  <td>' . $row['endtime'] . '</td>
 				  		  <td>' . $row['slots'] . '</td>
+						   <td>' . $row['c_status'] . '</td>
             </tr>';
     }
     echo '</tbody>

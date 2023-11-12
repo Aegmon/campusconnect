@@ -4,6 +4,21 @@ include("sidebar.php");
 ?>
         
      <?php
+if (isset($_POST['consult'])) {
+  
+    $ins_c_id = $_POST['ins_c_id'];
+    $stmt = $con->prepare("INSERT INTO consultation (stud_id, inc_c_id) VALUES (?, ?)");
+   
+    $stmt->bind_param("ii", $student_id, $ins_c_id);
+
+    // Execute the prepared statement
+    if ($stmt->execute()) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 
 if (isset($_POST['post'])) {
   
@@ -114,8 +129,9 @@ if (isset($_POST['post'])) {
     END AS name 
 FROM posts p 
 LEFT JOIN faculty_info f ON p.user_id = f.userID 
-LEFT JOIN student s ON p.user_id = s.user_id where p.isapproved = '1'
-ORDER BY p.post_date DESC;
+LEFT JOIN student s ON p.user_id = s.user_id 
+WHERE p.isapproved = '1'
+ORDER BY p.post_date DESC;;
 ");
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
@@ -124,7 +140,7 @@ ORDER BY p.post_date DESC;
                 $postDate = $row["post_date"];
                 $post_id = $row["post_id"];
                 $postFrom = $row["post_from"]; 
-
+ $likes = $row["likes"]; // new
                 echo '<div class="card mb-3">';
                 echo '<div class="card-body">';
                 // Display the post with a header for the post source
@@ -147,7 +163,9 @@ ORDER BY p.post_date DESC;
                             <button type="submit" name="reply" class="btn btn-primary btn-sm mt-2">Reply</button>
                         </form>
                     </div>';
-
+echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post-id="' . $post_id . '" onclick="likePost(' . $post_id . ')">
+        <i class="fadeIn animated bx bx-like"></i> Like (' . $likes . ')
+      </button>';
                     $replyResult = $con->query("SELECT * FROM post_replies WHERE post_id = $post_id");
         if ($replyResult->num_rows > 0) {
             echo '<ul class="list-group list-group-flush"  margin-top: 20px;">';
@@ -178,59 +196,146 @@ ORDER BY p.post_date DESC;
         }
         ?>
 		   </div>
-           	<div class="col-3">	
- <div class="card">
-       <div class="card-header"> Available for consultation</div>
-            <div class="card-body">
-              
+            <div class="col-md-3 col-sm-6">
+                         <div class="card ">
+							<div class="card-header text-center">
+                              	<h5 class="mt-2">Scheduled Consultation</h5>
+                                		</div>    
+                          </div>
 <?php
-$sql = "SELECT s.fname AS student_first_name, s.lname AS student_last_name, s.image AS student_image
-        FROM student s
-        JOIN consultation c ON s.user_id = c.user_id_host";
 
-$result = $con->query($sql);
+$query = "SELECT * FROM ins_consult ic 
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id";
 
-if ($result->num_rows > 0) {
-  // Output data of each row
-  while ($row = $result->fetch_assoc()) {
-    echo '
-    <div class="card radius">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-        <a type="button" class="position-relative">   
-									
-         <img src="' . $row["student_image"] . '" class="rounded-circle p-1 border" width="90" height="90" alt="Student Image">
-        	</a>
-         <div class="flex-grow-1 ms-3">
-            <h5 class="mt-0">' . $row["student_first_name"] . ' ' . $row["student_last_name"] . '</h5>
-          </div>
-        </div>
-      </div>
-    </div>';
-  }
+$result = $con->query($query);
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {?>
+ <a href="#" class="text-dark" data-bs-toggle="modal" data-bs-target="#exampleModal-<?php echo $row['ins_c_id']?>">
+           <div class="row">
+              <div class="card radius-10 bg-gradient-blues">
+							<div class="card-body">
+								<div class="d-flex align-items-center">
+									<img src="assets/images/avatars/admin.png" class="rounded-circle p-1 border" width="60" height="60" alt="...">
+									<div class="flex-grow-1 ms-3">
+                                        
+										<h5 class="mt-0"><?php echo $row['first_name'].' '.$row['last_name']?></h5>
+										<p class="mb-0"><?php $originalDate = $row['date'];
+
+// Convert the date to the desired format
+$formattedDate = date("F j, Y", strtotime($originalDate));
+
+// Output the formatted date
+echo $formattedDate;?></p>
+                                        <div class="row">
+                                        <div class="col-9">
+                                       <p class="mb-0"><?php
+// Assuming $row['starttime'] and $row['endtime'] contain the times in some format
+$startTime = $row['starttime'];
+$endTime = $row['endtime'];
+
+// Convert the times to the desired format
+$formattedStartTime = date("h:i A", strtotime($startTime));
+$formattedEndTime = date("h:i A", strtotime($endTime));
+
+// Concatenate and output the formatted times
+echo $formattedStartTime . ' - ' . $formattedEndTime;
+?></p>
+                                        </div>
+                                              <div class="col-3">
+                                     		<?php
+// Assuming $row['status'] contains the status information
+
+$status = $row['c_status'];
+
+if ($status == 'Ongoing') {
+    echo '<span class="badge bg-success">Ongoing</span>';
+} elseif ($status == 'Cancelled') {
+    echo '<span class="badge bg-danger">Cancelled</span>';
 } else {
-  echo "0 results";
-}
 
+}
 ?>
 
+                                        </div>
+                                        </div>
+                                  
+									</div>
+                                            
+							</div>
+					</div>
+			</div>
+        </div>
+        </a>
+          <form action="" method="post" class="text-center">
+     <div class="modal fade" id="exampleModal-<?php echo $row['ins_c_id']?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Schedule a Consultation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+              <input type="hidden" name="ins_c_id" value="<?php echo $row['ins_c_id']?>">
+                  <h4 class="text-center">Are you sure you want to schedule a consultation?</h4>
+             
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                     <button  type="submit" name="consult" class="btn btn-primary px-5">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        </form>
+<?php }}else{
+    Echo "No Consultation";
+}?>
 
-                  </div>
-                    </div>
-                 </div>
+    </div>
               </div>
                     
 </div>
 
 	<div class="overlay toggle-icon"></div>
-		<!--end overlay-->
-		<!--Start Back To Top Button--> <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
-		<!--End Back To Top Button-->
+	 <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
+	
 	<footer class="page-footer">
 			<p class="mb-0">Campus Connect © 2023. All right reserved.</p>
 		</footer>
 </body>
+<script>
+function likePost(postID) {
+    console.log('Like button clicked for post ID:', postID);
+
+    fetch('like_post.php?post_id=' + postID, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);
+
+        // Update the likes count in the UI
+        const likeButton = document.querySelector('.like-button[data-post-id="' + postID + '"]');
+        likeButton.innerHTML = '<span class="glyphicon glyphicon-heart" aria-hidden="true"></span> Like (' + data.likes + ')';
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
 
 
+</script>
 
+	<script src="assets/js/bootstrap.bundle.min.js"></script>
+	<!--plugins-->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
+	<script src="assets/plugins/metismenu/js/metisMenu.min.js"></script>
+	<script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
+	<!--app JS-->
+	<script src="assets/js/app.js"></script>
 </html>

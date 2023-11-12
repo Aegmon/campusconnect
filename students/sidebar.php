@@ -38,6 +38,7 @@ include('session.php');
 	<link rel="stylesheet" href="assets/css/semi-dark.css" />
 	<link rel="stylesheet" href="assets/css/header-colors.css" />
 	<title>Campus Connect | Student</title>
+
 </head>
 
 <body>
@@ -99,13 +100,13 @@ include('session.php');
 					</a>
 				</li>
 			
-				 	<!-- <li>
+				 	<li>
 					<a href="consultation.php">
-						<div class="parent-icon"><i class='bx bx-chat' ></i>
+						<div class="parent-icon"><i class='bx bx-calendar'></i>
 						</div>
-						<div class="menu-title">Consultation</div>
+						<div class="menu-title">My Consultation</div>
 					</a>
-				</li> -->
+				</li>
 					<li>
 					<a href="profile.php">
 						<div class="parent-icon"><i class='bx bx-cog' ></i>

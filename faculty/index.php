@@ -1,839 +1,334 @@
 
 <?php
 include("sidebar.php");
+
+if (isset($_POST['Accept'])) {
+  
+    $consult_id = $_POST['consult_id'];
+    $stmt = $con->prepare("UPDATE `consultation` SET status ='completed' WHERE consult_id=?");
+    $stmt->bind_param("i", $consult_id);
+
+    // Execute the prepared statement
+    if ($stmt->execute()) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
+if (isset($_POST['Reject'])) {
+  
+    $consult_id = $_POST['consult_id'];
+    $stmt = $con->prepare("UPDATE `consultation` SET status ='rejected' WHERE consult_id=?");
+    $stmt->bind_param("i", $consult_id);
+
+    // Execute the prepared statement
+    if ($stmt->execute()) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 ?>
-        
+ <?php
+
+if (isset($_POST['post'])) {
+  
+    $postTitle = $_POST['postTitle'];
+    $postContent = $_POST['postContent'];
+    $postFrom = "user";
+
+
+    // Prepare and bind the INSERT statement
+    $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from) VALUES (?, ?, ?, ?)");
+   
+    $stmt->bind_param("isss", $user_id, $postTitle, $postContent, $postFrom);
+
+    // Execute the prepared statement
+ if ($stmt->execute()) {
+    echo "New record created successfully";
+} else {
+    echo "Error: " . $stmt->error;
+}
+
+
+}
+   if (isset($_POST['reply']) ) {
+      $replyContent = $_POST['replyContent'];
+        $postID = $_POST['postID']; 
+   
+   $stmt = $con->prepare("INSERT INTO post_replies (post_id, user_id, reply_content, reply_from) VALUES (?, ?, ?, ?)");
+
+        // Assuming the user is an admin
+        $replyFrom = 'admin'; 
+
+        $stmt->bind_param("iiss", $postID, $user_id, $replyContent, $replyFrom);
+
+        // Execute the prepared statement
+        if ($stmt->execute()) {
+            // Return success message or handle the response accordingly
+            echo "Reply inserted successfully";
+        } else {
+            // Return error message or handle the response accordingly
+            echo "Error: " . $stmt . "<br>" . $con->error;
+        }
+    }
+?>
+       
         
         <!--SIDEBAR -->
 		<!--start page wrapper -->
-		<div class="page-wrapper">
-			<div class="page-content">
-<!-- 			
-			  <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-4">
-			  	<div class="col">
-						<div class="card radius-10">
+	<div class="page-wrapper">
+    <div class="page-content">
+        <!--breadcrumb-->
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="breadcrumb-title pe-3">Home</div>
+            <div class="ps-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <!--end breadcrumb-->
+
+        <!-- <h6 class="mb-0 text-uppercase">DataTable Import</h6> -->
+        <hr/>
+        <div class="row">
+            <div class="col-9">
+        <div class="card">
+            <div class="card-body">
+                <form action="" method="post">
+                    <div class="form-group">
+                        <label for="postTitle">Post Title</label>
+                        <input type="text" class="form-control" id="postTitle" name="postTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="postContent">Post Content</label>
+                        <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group mt-3">
+                        <button type="submit" name="post" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
+            </div>
+        <?php
+        function time_ago($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    $diff->w = floor($diff->d / 7);
+    $diff->d -= $diff->w * 7;
+
+    $string = array(
+        'y' => 'year',
+        'm' => 'month',
+        'w' => 'week',
+        'd' => 'day',
+        'h' => 'hour',
+        'i' => 'minute',
+        's' => 'second',
+    );
+
+    foreach ($string as $k => &$v) {
+        if ($diff->$k) {
+            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+        } else {
+            unset($string[$k]);
+        }
+    }
+
+    if (!$full) $string = array_slice($string, 0, 1);
+    return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
+
+         $result = $con->query("SELECT * FROM posts where isapproved = '1'order by post_date desc");
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $postTitle = $row["post_title"];
+                $postContent = $row["post_content"];
+                $postDate = $row["post_date"];
+                $post_id = $row["post_id"];
+                $postFrom = $row["post_from"]; // Assuming 'admin' or 'user' is stored in the 'post_from' field
+
+                echo '<div class="card mb-3">';
+                echo '<div class="card-body">';
+                // Display the post with a header for the post source
+                if ($postFrom === 'user') {
+                    echo '<div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                            <h6 class="text-dark m-0">'. $first_name .' '. $last_name .':</h6>
+                        </div>';
+                }
+                echo '<h5 class="card-title">' . $postTitle . '</h5>';
+                echo '<p class="card-text">' . $postContent . '</p>';
+                echo '<div class="card-footer text-muted" style="display: flex; justify-content: space-between; align-items: center;">
+                        <small>' . time_ago($postDate) . '</small>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="toggleReply(this)">Reply</button>
+                    </div>';
+                echo '<div class="mt-3 p-2"  style="display: none;" id="replyField">
+                        <form method="post" action="">
+                            <input type="text" class="form-control form-control-sm" id="replyInput" name="replyContent" placeholder="Type your reply here">
+                            <input type="hidden" id="postID" name="postID" value="' . $post_id . '">
+                            <button type="submit" name="reply" class="btn btn-primary btn-sm mt-2">Reply</button>
+                        </form>
+                    </div>';
+
+                    $replyResult = $con->query("SELECT * FROM post_replies WHERE post_id = $post_id");
+        if ($replyResult->num_rows > 0) {
+            echo '<ul class="list-group list-group-flush"  margin-top: 20px;">';
+            while ($replyRow = $replyResult->fetch_assoc()) {
+                $replyContent = $replyRow["reply_content"];
+                $replyDate = $replyRow["reply_date"];
+                $replyFrom = $replyRow["reply_from"]; // Assuming 'admin' or 'user' is stored in the 'reply_from' field
+
+                echo '<li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div style="display: flex; align-items: center;">
+                            <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                            <p class="mb-0">' . $replyContent . '</p>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">' . time_ago($replyDate) . '</span>
+                    </li>';
+            }
+            echo '</ul>';
+        } else {
+            echo '<div class="list-group mt-3" ></div>';
+        }
+
+
+                echo '</div>'; // close card-body
+                echo '</div>'; // close card
+            }
+        } else {
+            echo "0 results";
+        }
+        ?>
+    </div>
+      <div class="col-3">
+                         <div class="card ">
+							<div class="card-header text-center">
+                              	<h5 class="mt-2">Scheduled Consultation</h5>
+                                		</div>    
+                          </div>
+<?php
+
+$query = "SELECT * FROM ins_consult ic 
+JOIN consultation c ON c.ins_c_id = ic.ins_c_id
+JOIN student s ON c.stud_id = s.stud_id WHERE ic.faculty_id = '$faculty_id'";
+
+$result = $con->query($query);
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {?>
+ <a href="#" class="text-dark" data-bs-toggle="modal" data-bs-target="#exampleModal-<?php echo $row['consult_id']?>">
+           <div class="row">
+              <div class="card radius-10 bg-gradient-blues">
 							<div class="card-body">
 								<div class="d-flex align-items-center">
-									<div>
-										<p class="mb-0 text-secondary">All Users</p>
-										<h4 class="my-1">805</h4>
-									
-									</div>
-								<div class="widgets-icons bg-light-info text-info ms-auto"><i class='bx bxs-group'></i>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="d-flex align-items-center">
-									<div>
-										<p class="mb-0 text-secondary">Students</p>
-										<h4 class="my-1">805</h4>
-									
-									</div>
-								<div class="widgets-icons bg-success-info text-success ms-auto"><i class='bx bxs-group'></i>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="d-flex align-items-center">
-									<div>
-										<p class="mb-0 text-secondary">Faculty</p>
-										<h4 class="my-1">805</h4>
-									
-									</div>
-								<div class="widgets-icons bg-light-warning text-warning ms-auto"><i class='bx bxs-group'></i>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-						<div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="d-flex align-items-center">
-									<div>
-										<p class="mb-0 text-secondary">Online Students</p>
-										<h4 class="my-1">805</h4>
-									
-									</div>
-								<div class="widgets-icons bg-light-danger text-danger ms-auto"><i class='bx bxs-group'></i>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-			  </div>
-			   -->
-			  <h1 class="mb-0 text-uppercase text-center">GRADE-<?php echo $grade." ".$strand;?></h1>
-				<hr/>
-			  	<div class="row row-cols-1 row-cols-md-3 row-cols-xl-5">
-					<!-- <div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="text-center">
-									<div class="widgets-icons rounded-circle mx-auto bg-light-primary text-primary mb-3"><i class='bx bxs-group'></i>
-									</div>
-									<h4 class="my-1">20</h4>
-									<p class="mb-0 text-secondary">Grade-12 Tourism</p>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="text-center">
-									<div class="widgets-icons rounded-circle mx-auto bg-light-danger text-danger mb-3"><i class='bx bxs-group'></i>
-									</div>
-									<h4 class="my-1">34</h4>
-									<p class="mb-0 text-secondary">Grade-12 ABM</p>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="text-center">
-									<div class="widgets-icons rounded-circle mx-auto bg-light-info text-info mb-3"><i class='bx bxs-group'></i>
-									</div>
-									<h4 class="my-1">23</h4>
-									<p class="mb-0 text-secondary">Grade-11 ABM</p>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="text-center">
-									<div class="widgets-icons rounded-circle mx-auto bg-light-success text-success mb-3"><i class='bx bxs-group'></i>
-									</div>
-									<h4 class="my-1">26</h4>
-									<p class="mb-0 text-secondary">Grade-12 Animation</p>
-								</div>
-							</div>
-						</div>
-					</div> -->
-					<div class="col-12">
-						<div class="card radius-10">
-							<div class="card-body">
-								<div class="text-center">
-									<div class="widgets-icons rounded-circle mx-auto bg-light-warning text-warning mb-3"><i class='bx bxs-group'></i>
-									</div>
-									<h4 class="my-1"> <?php echo $total_students; ?></h4>
-									<p class="mb-0 text-secondary">GRADE-<?php echo $grade." ".$strand;?></p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			  
-			  <div class="row">
-				 <div class="col-12 col-xl-4 d-flex">
-				  <div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="" id="chart5"></div>
-						</div>
-					</div>
-				</div>
-			    <div class="col-12 col-xl-4 d-flex">
-				  <div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="" id="chart51"></div>
-						</div>
-					</div>
-				</div>
-				<div class="col-12 col-xl-4 d-flex">
-				  <div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-									<div>
-										<h5 class="mb-1">Online Students</h5>
-									</div>
-									<div class="font-22 ms-auto"><i class="bx bx-dots-horizontal-rounded"></i>
-									</div>
-								</div>
-							<div class="mt-4" id="onlinestudent"></div>
-							<div class="d-flex align-items-center">
-									<div>
-										<h2 class="mb-0"><?php echo $online_count; ?></h2>
-										<p class="mb-0">/<?php echo $total_userdata; ?></p>
-									</div>
-									<div class="ms-auto d-flex align-items-center border radius-10 px-2">
-									  <i class='bx bxs-checkbox font-22 me-1 text-primary'></i><span>Online</span>
-									</div>
-							  </div>
-						</div>
-					</div>
-				</div>
-			  </div>
-              <!--end row-->
+									<img src="assets/images/avatars/admin.png" class="rounded-circle p-1 border" width="60" height="60" alt="...">
+									<div class="flex-grow-1 ms-3">
+                                          <div class="row">
+                                        <div class="col-9">
+										<h5 class="mt-0"><?php echo $row['fname'].' '.$row['lname']?></h5>
+                                        
+                                        </div>
+                                         <div class="col-3">
+                                         
+                                            </div>
+                                          </div>
+										<p class="mb-0"><?php $originalDate = $row['date'];
 
+// Convert the date to the desired format
+$formattedDate = date("F j, Y", strtotime($originalDate));
 
-			  <!-- <div class="row row-cols-1 row-cols-xl-2">
-				<div class="col d-flex">
-					<div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="" id="chart7"></div>
-						</div>
-					</div>
-				</div>
-				<div class="col d-flex">
-					<div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-								<div>
-									<h5 class="mb-1">Sales Report</h5>
-								</div>
-								<div class="font-22 ms-auto"><i class="bx bx-dots-horizontal-rounded"></i>
-								</div>
-							</div>
-							<div class="" id="chart8"></div>
-						</div>
-					</div>
-				</div>
-			  </div> -->
-              <!--end row-->
+// Output the formatted date
+echo $formattedDate;?></p>
+                                        <div class="row">
+                                        <div class="col-9">
+                                       <p class="mb-0"><?php
+// Assuming $row['starttime'] and $row['endtime'] contain the times in some format
+$startTime = $row['starttime'];
+$endTime = $row['endtime'];
 
-			  <!-- <div class="row">
-				<div class="col-12 col-xl-4 col-xxl-3 d-flex">
-					<div class="card radius-10 w-100 overflow-hidden">
-						<div class="card-body">
-							<p class="mb-1">Overall Sales Performance</p>
-							<div class="">
-								<h2 class="mb-0">$84,126.5</h2>
-								<p class="mb-0 text-success">+2.5% vs last month</p>
-							</div>
-						</div>
-						<div class="" id="chart9"></div>
-					</div>
-				</div>
-				<div class="col-12 col-xl-8 col-xxl-9 d-flex">
-					<div class="card w-100 radius-10">
-						<div class="row g-0">
-						  <div class="col-md-4 border-end">
-							<div class="card-body">
-							  <h5 class="card-title">Top Sales Locations</h5>
-							  <h2 class="mt-4 mb-1">25.860 <i class="flag-icon flag-icon-us rounded"></i></h2>
-							  <p class="mb-0 text-secondary">Our Most Customers in US</p>
-							</div>
-							<ul class="list-group mt-4 list-group-flush">
-								<li class="list-group-item d-flex align-items-center">
-								  <i class='bx bxs-circle me-1 text-success'></i>
-								  <span>Massive</span>
-								  <strong class="ms-auto">18.4k</strong>
-								</li>
-								<li class="list-group-item d-flex align-items-center">
-								  <i class='bx bxs-circle me-1 text-danger'></i>
-								  <span>Large</span>
-								  <strong class="ms-auto">6.9k</strong>
-								</li>
-								<li class="list-group-item d-flex align-items-center">
-								  <i class='bx bxs-circle me-1 text-primary'></i>
-								  <span>Medium</span>
-								  <strong class="ms-auto">5.4k</strong>
-								</li>
-								<li class="list-group-item d-flex align-items-center">
-								  <i class='bx bxs-circle me-1 text-warning'></i>
-								  <span>Small</span>
-								  <strong class="ms-auto">875</strong>
-								</li>
-							</ul>
-						  </div>
-						  <div class="col-md-8">
-							  <div class="p-3">
-								<div class="" id="geographic-map"></div>
-							  </div>
-						  </div>
-						</div>
-					  </div>
-				</div>
-			  </div> -->
-              <!--end row-->
+// Convert the times to the desired format
+$formattedStartTime = date("h:i A", strtotime($startTime));
+$formattedEndTime = date("h:i A", strtotime($endTime));
 
-			   <!-- <div class="row">
-				 <div class="col-12 col-xl-4 d-flex">
-					<div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-								<div>
-									<h5 class="mb-0">New Customers</h5>
-								</div>
-								<div class="font-22 ms-auto"><i class='bx bx-dots-horizontal-rounded'></i>
-								</div>
-							</div>
-						</div>
-						<div class="customers-list p-3 mb-3">
-							<div class="customers-list-item d-flex align-items-center border-top border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-1.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Emy Jackson</h6>
-									<p class="mb-0 font-13 text-secondary">emy_jac@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-2.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Martin Hughes</h6>
-									<p class="mb-0 font-13 text-secondary">martin.hug@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-3.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Laura Madison</h6>
-									<p class="mb-0 font-13 text-secondary">laura_01@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-4.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Shoan Stephen</h6>
-									<p class="mb-0 font-13 text-secondary">s.stephen@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-5.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Keate Medona</h6>
-									<p class="mb-0 font-13 text-secondary">Keate@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-6.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Paul Benn</h6>
-									<p class="mb-0 font-13 text-secondary">pauly.b@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-7.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Winslet Maya</h6>
-									<p class="mb-0 font-13 text-secondary">winslet_02@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-8.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Bruno Bernard</h6>
-									<p class="mb-0 font-13 text-secondary">bruno.b@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-9.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Merlyn Dona</h6>
-									<p class="mb-0 font-13 text-secondary">merlyn.d@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-							<div class="customers-list-item d-flex align-items-center border-bottom p-2 cursor-pointer">
-								<div class="">
-									<img src="assets/images/avatars/avatar-10.png" class="rounded-circle" width="46" height="46" alt="" />
-								</div>
-								<div class="ms-2">
-									<h6 class="mb-1 font-14">Alister Campel</h6>
-									<p class="mb-0 font-13 text-secondary">alister_42@xyz.com</p>
-								</div>
-								<div class="list-inline d-flex customers-contacts ms-auto">	<a href="javascript:;" class="list-inline-item"><i class='bx bxs-envelope'></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bxs-phone' ></i></a>
-									<a href="javascript:;" class="list-inline-item"><i class='bx bx-dots-vertical-rounded'></i></a>
-								</div>
-							</div>
-						</div>
-					</div>
-				 </div>
-				 <div class="col-12 col-xl-4 d-flex">
-					<div class="card radius-10 w-100 overflow-hidden">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-								<div>
-									<h5 class="mb-0">Store Metrics</h5>
-								</div>
-								<div class="font-22 ms-auto"><i class='bx bx-dots-horizontal-rounded'></i>
-								</div>
-							</div>
-						</div>
+// Concatenate and output the formatted times
+echo $formattedStartTime . ' - ' . $formattedEndTime;
+?></p>
+                                        </div>
+                                              <div class="col-3">
+                                     		<?php
+// Assuming $row['status'] contains the status information
 
-						<div class="store-metrics p-3 mb-3">
-							
-                            <div class="card mt-3 radius-10 border shadow-none">
-								<div class="card-body">
-                                    <div class="d-flex align-items-center">
-										<div>
-											<p class="mb-0 text-secondary">Total Products</p>
-											<h4 class="mb-0">856</h4>
-										</div>
-										<div class="widgets-icons bg-light-primary text-primary ms-auto"><i class='bx bxs-shopping-bag' ></i>
-										</div>
+$status = $row['status'];
+
+if ($status == 'completed') {
+    echo '<span class="badge bg-success">Completed</span>';
+} elseif ($status == 'pending') {
+    echo '<span class="badge bg-warning">Pending</span>';
+} else {
+ echo '<span class="badge bg-danger">Rejected</span>';
+}
+?>
+
+                                        </div>
+                                        </div>
+                                  
 									</div>
-								</div>
+                                            
 							</div>
-							<div class="card radius-10 border shadow-none">
-								<div class="card-body">
-                                    <div class="d-flex align-items-center">
-										<div>
-											<p class="mb-0 text-secondary">Total Customers</p>
-											<h4 class="mb-0">45,241</h4>
-										</div>
-										<div class="widgets-icons bg-light-danger text-danger ms-auto"><i class='bx bxs-group' ></i>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="card radius-10 border shadow-none">
-								<div class="card-body">
-                                    <div class="d-flex align-items-center">
-										<div>
-											<p class="mb-0 text-secondary">Total Categories</p>
-											<h4 class="mb-0">98</h4>
-										</div>
-										<div class="widgets-icons bg-light-success text-success ms-auto"><i class='bx bxs-category' ></i>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="card radius-10 border shadow-none">
-								<div class="card-body">
-                                    <div class="d-flex align-items-center">
-										<div>
-											<p class="mb-0 text-secondary">Total Orders</p>
-											<h4 class="mb-0">124</h4>
-										</div>
-										<div class="widgets-icons bg-light-info text-info ms-auto"><i class='bx bxs-cart-add' ></i>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="card radius-10 border shadow-none mb-0">
-								<div class="card-body">
-                                    <div class="d-flex align-items-center">
-										<div>
-											<p class="mb-0 text-secondary">Total Vendors</p>
-											<h4 class="mb-0">55</h4>
-										</div>
-										<div class="widgets-icons bg-light-warning text-warning ms-auto"><i class='bx bxs-user-account' ></i>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
 					</div>
-				 </div>
-
-				 <div class="col-12 col-xl-4 d-flex">
-					<div class="card radius-10 w-100 ">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-								<div>
-									<h5 class="mb-1">Top Products</h5>
-								</div>
-								<div class="font-22 ms-auto"><i class="bx bx-dots-horizontal-rounded"></i>
-								</div>
-							</div>
-						</div>
-
-						<div class="product-list p-3 mb-3">
-
-							 <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/01.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Black Boost Chair</h6>
-									<p class="mb-0">148 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$246.24</h6>
-								</div>
-							  </div>
-							 
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/03.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Red Single Sofa</h6>
-									<p class="mb-0">122 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$328.14</h6>
-								</div>
-							  </div>
-							
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/04.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Pink Rounded Sofa</h6>
-									<p class="mb-0">105 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$124.35</h6>
-								</div>
-							  </div>
-							 
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/05.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Brown Single Table</h6>
-									<p class="mb-0">201 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$158.34</h6>
-								</div>
-							  </div>
-							  
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/06.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Grey Long Chair</h6>
-									<p class="mb-0">146 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">158.24</h6>
-								</div>
-							  </div>
-							  
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/07.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Beautiful Sofa</h6>
-									<p class="mb-0">210 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$520.24</h6>
-								</div>
-							  </div>
-							 
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/08.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Grey Stand Table</h6>
-									<p class="mb-0">115 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$345.24</h6>
-								</div>
-							  </div>
-							 
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/09.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Brown Single Table</h6>
-									<p class="mb-0">116 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$126.24</h6>
-								</div>
-							  </div>
-							 
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/10.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Four Leg Chair</h6>
-									<p class="mb-0">154 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$425.24</h6>
-								</div>
-							  </div>
-							 
-							  <div class="d-flex align-items-center py-3 border-bottom cursor-pointer">
-								<div class="product-img me-2">
-									 <img src="assets/images/products/11.png" alt="product img">
-								  </div>
-								<div class="">
-									<h6 class="mb-0 font-14">Blue Light T-Shirt</h6>
-									<p class="mb-0">186 Sales</p>
-								</div>
-								<div class="ms-auto">
-									<h6 class="mb-0">$149.34</h6>
-								</div>
-							  </div>
-							 
-						</div>
-					</div>
-				 </div>
-				</div> -->
-               <!-- end row  -->
-
-				<!-- <div class="row">
-					<div class="col">
-						<div class="card radius-10 mb-0">
-							<div class="card-body">
-								<div class="d-flex align-items-center">
-									<div>
-										<h5 class="mb-1">Recent Orders</h5>
-									</div>
-									<div class="ms-auto">
-										<a href="javscript:;" class="btn btn-primary btn-sm radius-30">View All Products</a>
-									</div>
-								</div>
-
-                               <div class="table-responsive mt-3">
-								   <table class="table align-middle mb-0">
-									   <thead class="table-light">
-										   <tr>
-											   <th>Tracking ID</th>
-											   <th>Products Name</th>
-											   <th>Date</th>
-											   <th>Status</th>
-											   <th>Price</th>
-											   <th>Actions</th>
-										   </tr>
-									   </thead>
-									   <tbody>
-										   <tr>
-											   <td>#55879</td>
-											   <td>
-												<div class="d-flex align-items-center">
-													<div class="recent-product-img">
-														<img src="assets/images/products/15.png" alt="">
-													</div>
-													<div class="ms-2">
-														<h6 class="mb-1 font-14">Light Red T-Shirt</h6>
-													</div>
-												</div>
-											   </td>
-											   <td>22 Jun, 2020</td>
-											   <td class=""><span class="badge bg-light-success text-success w-100">Completed</span></td>
-											   <td>#149.25</td>
-											   <td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											   </td>
-										   </tr>
-										   <tr>
-											<td>#88379</td>
-											<td>
-											 <div class="d-flex align-items-center">
-												 <div class="recent-product-img">
-													 <img src="assets/images/products/16.html" alt="">
-												 </div>
-												 <div class="ms-2">
-													 <h6 class="mb-1 font-14">Grey Headphone</h6>
-												 </div>
-											 </div>
-											</td>
-											<td>22 Jun, 2020</td>
-											<td class=""><span class="badge bg-light-danger text-danger w-100">Cancelled</span></td>
-											<td>#149.25</td>
-											<td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											</td>
-										</tr>
-										<tr>
-											<td>#68823</td>
-											<td>
-											 <div class="d-flex align-items-center">
-												 <div class="recent-product-img">
-													 <img src="assets/images/products/19.png" alt="">
-												 </div>
-												 <div class="ms-2">
-													 <h6 class="mb-1 font-14">Grey Hand Watch</h6>
-												 </div>
-											 </div>
-											</td>
-											<td>22 Jun, 2020</td>
-											<td class=""><span class="badge bg-light-warning text-warning w-100">Pending</span></td>
-											<td>#149.25</td>
-											<td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											</td>
-										</tr>
-										<tr>
-											<td>#54869</td>
-											<td>
-											 <div class="d-flex align-items-center">
-												 <div class="recent-product-img">
-													 <img src="assets/images/products/07.png" alt="">
-												 </div>
-												 <div class="ms-2">
-													 <h6 class="mb-1 font-14">Brown Sofa</h6>
-												 </div>
-											 </div>
-											</td>
-											<td>22 Jun, 2020</td>
-											<td class=""><span class="badge bg-light-success text-success w-100">Completed</span></td>
-											<td>#149.25</td>
-											<td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											</td>
-										</tr>
-										<tr>
-											<td>#22536</td>
-											<td>
-											 <div class="d-flex align-items-center">
-												 <div class="recent-product-img">
-													 <img src="assets/images/products/17.png" alt="">
-												 </div>
-												 <div class="ms-2">
-													 <h6 class="mb-1 font-14">Black iPhone 11</h6>
-												 </div>
-											 </div>
-											</td>
-											<td>22 Jun, 2020</td>
-											<td class=""><span class="badge bg-light-success text-success w-100">Completed</span></td>
-											<td>#149.25</td>
-											<td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											</td>
-										</tr>
-										<tr>
-											<td>#25796</td>
-											<td>
-											 <div class="d-flex align-items-center">
-												 <div class="recent-product-img">
-													 <img src="assets/images/products/14.png" alt="">
-												 </div>
-												 <div class="ms-2">
-													 <h6 class="mb-1 font-14">Men Yellow T-Shirt</h6>
-												 </div>
-											 </div>
-											</td>
-											<td>22 Jun, 2020</td>
-											<td class=""><span class="badge bg-light-warning text-warning w-100">Pending</span></td>
-											<td>#149.25</td>
-											<td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											</td>
-										</tr>
-										<tr>
-											<td>#98754</td>
-											<td>
-											 <div class="d-flex align-items-center">
-												 <div class="recent-product-img">
-													 <img src="assets/images/products/08.png" alt="">
-												 </div>
-												 <div class="ms-2">
-													 <h6 class="mb-1 font-14">Grey Stand Table</h6>
-												 </div>
-											 </div>
-											</td>
-											<td>22 Jun, 2020</td>
-											<td class=""><span class="badge bg-light-danger text-danger w-100">Cancelled</span></td>
-											<td>#149.25</td>
-											<td>
-												<div class="d-flex order-actions">	<a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
-													<a href="javascript:;" class="ms-4 text-primary bg-light-primary border-0"><i class='bx bxs-edit' ></i></a>
-												</div>
-											</td>
-										</tr>
-									   </tbody>
-								   </table>
-							   </div>
-								
-							</div>
-						</div>
-					</div>
-				</div> -->
-                <!--end row-->
-			
 			</div>
-		</div>
+        </div>
+        </a>
+          <form action="" method="post" class="text-center">
+    <div class="modal fade" id="exampleModal-<?php echo $row['consult_id']?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Schedule a Consultation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+              <input type="hidden" name="consult_id" value="<?php echo $row['consult_id']?>">
+                  <h4 class="text-center">	<h5 class="mt-0"><?php echo $row['fname'].' '.$row['lname']?> is requesting for a consultation</h5> </h4>
+             
+                </div>
+                <div class="modal-footer">
+                     <button  type="submit" name="Reject" class="btn btn-danger px-5">Reject</button>
+                     <button  type="submit" name="Accept" class="btn btn-primary px-5">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        </form>
+<?php }}else{
+    Echo "No Consultation";
+}?>
+
+    </div>
+    </div>
+    </div>
+</div>
 		<!--end page wrapper -->
 		<!--start overlay-->
-		<div class="search-overlay"></div>
 		<div class="overlay toggle-icon"></div>
 		<!--end overlay-->
 		<!--Start Back To Top Button--> <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
 		<!--End Back To Top Button-->
-		<footer class="page-footer">
+	<footer class="page-footer">
 			<p class="mb-0">Campus Connect © 2023. All right reserved.</p>
 		</footer>
 	</div>
 	<!--end wrapper-->
-	<!--start switcher-->
 	
-	<!--end switcher-->
 	<!-- Bootstrap JS -->
 	<script src="assets/js/bootstrap.bundle.min.js"></script>
 	<!--plugins-->
@@ -841,189 +336,39 @@ include("sidebar.php");
 	<script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
 	<script src="assets/plugins/metismenu/js/metisMenu.min.js"></script>
 	<script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
-	<script src="assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js"></script>
-	<script src="assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js"></script>
-	<script src="assets/plugins/highcharts/js/highcharts.js"></script>
-	<script src="assets/plugins/highcharts/js/exporting.js"></script>
-	<script src="assets/plugins/highcharts/js/variable-pie.js"></script>
-	<script src="assets/plugins/highcharts/js/export-data.js"></script>
-	<script src="assets/plugins/highcharts/js/accessibility.js"></script>
-	<script src="assets/plugins/apexcharts-bundle/js/apexcharts.min.js"></script>
-	<script src="assets/js/index2.js"></script>
+	<script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+	<script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			$('#example').DataTable();
+		  } );
+	</script>
+	<script>
+		$(document).ready(function() {
+			var table = $('#example2').DataTable( {
+				lengthChange: false,
+				buttons: [ 'copy', 'excel', 'pdf', 'print']
+			} );
+		 
+			table.buttons().container()
+				.appendTo( '#example2_wrapper .col-md-6:eq(0)' );
+		} );
+	</script>
+    <script>
+    function toggleReply(button) {
+        var replyField = button.parentNode.nextElementSibling;
+        if (replyField.style.display === "none") {
+            replyField.style.display = "block";
+        } else {
+            replyField.style.display = "none";
+        }
+    }
+</script>
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
-	<script>
-		new PerfectScrollbar('.customers-list');
-		new PerfectScrollbar('.store-metrics');
-		new PerfectScrollbar('.product-list');
-	</script>
 
-    <script>
-$(document).ready(function () {
-Highcharts.chart('chart5', {
-    chart: {
-        type: 'pie', // Use a pie chart to represent the gender distribution
-        height: 420,
-        styledMode: true
-    },
-    credits: {
-        enabled: false
-    },
-    title: {
-        text: 'Gender Distribution of Students'
-    },
-    tooltip: {
-        pointFormat: '{series.name}: <b>{point.y}</b>'
-    },
-    plotOptions: {
-        pie: {
-            allowPointSelect: true,
-            cursor: 'pointer',
-            dataLabels: {
-                enabled: true,
-                format: '<b>{point.name}</b>: {point.y}'
-            }
-        }
-    },
-    series: [{
-        name: 'Gender',
-        colorByPoint: true,
-        data: [
-            {
-                name: 'Male',
-                y: <?php echo $male_count; ?> // Replace with the actual count of male students
-            },
-            {
-                name: 'Female',
-                y: <?php echo $female_count; ?> // Replace with the actual count of female students
-            }
-        ]
-    }]
-});
-
-// chart 6
-
-
-var options = {
-    chart: {
-        height: 300,
-        type: 'radialBar',
-        toolbar: {
-            show: false
-        }
-    },
-    plotOptions: {
-        radialBar: {
-            hollow: {
-                margin: 0,
-                size: '78%',
-                image: undefined,
-                imageOffsetX: 0,
-                imageOffsetY: 0,
-                position: 'front',
-                dropShadow: {
-                    enabled: false,
-                    top: 3,
-                    left: 0,
-                    blur: 4,
-                    color: 'rgba(0, 169, 255, 0.25)',
-                    opacity: 0.65
-                }
-            },
-            track: {
-                background: '#f0e6ff',
-                margin: 0,
-                dropShadow: {
-                    enabled: false,
-                    top: -3,
-                    left: 0,
-                    blur: 4,
-                    color: 'rgba(0, 169, 255, 0.85)',
-                    opacity: 0.65
-                }
-            },
-            dataLabels: {
-                showOn: 'always',
-                name: {
-                    offsetY: -25,
-                    show: true,
-                    color: '#6c757d',
-                    fontSize: '16px'
-                },
-                value: {
-                    formatter: function (val) {
-                        return val;
-                    },
-                    color: '#000',
-                    fontSize: '45px',
-                    show: true,
-                    offsetY: 10,
-                }
-            }
-        }
-    },
-    fill: {
-        type: 'gradient',
-        gradient: {
-            shade: 'light',
-            type: 'horizontal',
-            shadeIntensity: 0.5,
-            gradientToColors: ['#8833ff'],
-            inverseColors: false,
-            opacityFrom: 1,
-            opacityTo: 1,
-            stops: [0, 100]
-        }
-    },
-    colors: ["#8833ff"],
-    series: [ <?php echo $online_count; ?>], // Replace with the number of online students
-    stroke: {
-        lineCap: 'round',
-    },
-    labels: ['Online Students'], // Label for the chart
-};
-
-var chart = new ApexCharts(document.querySelector("#onlinestudent"), options);
-chart.render();
-
-});
-
-Highcharts.chart('chart51', {
-    chart: {
-        type: 'pie', // Use a pie chart to represent the gender distribution
-        height: 420,
-        styledMode: true
-    },
-    credits: {
-        enabled: false
-    },
-    title: {
-        text: 'Consultation Hours'
-    },
-    tooltip: {
-        pointFormat: '{series.name}: <b>{point.y}</b> ({point.percentage:.1f}%)'
-    },
-    plotOptions: {
-        pie: {
-            allowPointSelect: true,
-            cursor: 'pointer',
-            dataLabels: {
-                enabled: true,
-                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
-            }
-        }
-    },
-    series: [{
-        name: 'Status',
-        colorByPoint: true,
-        data: <?php echo $consultation_json; ?>
-    }]
-});
-
-
-    </script>
 </body>
 
 
-
+<!-- Mirrored from codervent.com/synadmin/demo/vertical/table-datatable.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Aug 2023 12:56:57 GMT -->
 </html>

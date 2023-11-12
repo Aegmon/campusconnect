@@ -67,7 +67,7 @@ $female_count = mysqli_fetch_assoc($ses_sql_female)['female_count'];
 $query_online_count = "SELECT COUNT(*) as online_count FROM userdata u
 JOIN faculty_info f ON u.userID = f.userID
 JOIN section s ON f.faculty_id = s.instructor
-WHERE s.id = '$section_id' AND isOnline=1 and u.usertype='student'";
+WHERE s.id = '$section_id' AND isOnline= '1' and u.usertype='student'";
 $ses_sql_online = mysqli_query($con, $query_online_count);
 
 // Fetching the count

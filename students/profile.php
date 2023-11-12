@@ -1,24 +1,97 @@
 
 <?php
 include("sidebar.php");
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
-    // Handle form submission
-    $user_id = $_POST['user_id'];
 
-    // Insert data into 'userdata' table
-    $insert_userdata_query = "UPDATE `userdata` SET isverify = '1' WHERE userID = ?";
-    $stmt = $con->prepare($insert_userdata_query);
-    if ($stmt) {
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $stmt->close();
-    } else {
-        // Error handling
-        echo "Error in the database operation.";
+?>
+<?php
+// Assuming you have a database connection established using MySQLi
+
+// Fetch data from the student table
+$studentQuery = "SELECT * FROM student WHERE stud_id = ?";
+$studentStatement = $con->prepare($studentQuery);
+$studentStatement->bind_param("i", $student_id); // Assuming $yourStudentId is the student ID
+$studentStatement->execute();
+$studentResult = $studentStatement->get_result();
+$studentData = $studentResult->fetch_assoc();
+
+// Fetch data from the userdata table
+$userDataQuery = "SELECT * FROM userdata WHERE userID = ?";
+$userDataStatement = $con->prepare($userDataQuery);
+$userDataStatement->bind_param("i", $currentUserId); // Assuming $yourUserId is the user ID
+$userDataStatement->execute();
+$userDataResult = $userDataStatement->get_result();
+$userData = $userDataResult->fetch_assoc();
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Check if it's a password update
+    if (isset($_POST['new_password'])) {
+        // Retrieve user ID from the session or form input
+        $userId = $currentUserId; // Replace with the actual user ID
+
+        // Validate and sanitize input
+        $newPassword = $_POST['new_password'];
+        $confirmPassword = $_POST['confirm_password'];
+
+        if ($newPassword != $confirmPassword) {
+            // Passwords do not match
+            echo "Passwords do not match.";
+            // You might want to redirect the user back to the form with an error message
+            exit();
+        }
+
+        // Hash the password before storing it
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+        // Update the password in the database
+        $updatePasswordQuery = "UPDATE users SET password = ? WHERE user_id = ?";
+        $updatePasswordStatement = $con->prepare($updatePasswordQuery);
+        $updatePasswordStatement->bind_param("si", $hashedPassword, $userId);
+
+        if ($updatePasswordStatement->execute()) {
+            // Password update successful
+            echo "Password updated successfully.";
+        } else {
+            // Password update failed
+            echo "Error updating password: " . $updatePasswordStatement->error;
+        }
+
+        // Close the statement
+        $updatePasswordStatement->close();
+    } elseif (isset($_POST['fname'])) { // Check if it's a student update
+        // Retrieve user input
+        $fname = $_POST['fname'];
+        $lname = $_POST['lname'];
+        $address = $_POST['address'];
+
+        // Perform validation (you can add more validation as needed)
+        if (empty($fname) || empty($lname)) {
+            $error = 'First Name and Last Name are required';
+        }
+
+        // If there are no validation errors, update the student
+        if (empty($error)) {
+            // Update the student information using prepared statement to prevent SQL injection
+            $updateQuery = "UPDATE student SET fname = ?, lname = ?, address = ? WHERE stud_id = ?";
+            $updateStatement = $con->prepare($updateQuery);
+
+      
+            $updateStatement->bind_param("sssi", $fname, $lname, $address, $stud_id);
+
+            $updateResult = $updateStatement->execute();
+
+            if ($updateResult) {
+                $successMessage = 'Student information updated successfully';
+            } else {
+                $error = 'Error updating student information: ' . $updateStatement->error;
+            }
+
+            // Close the statement
+            $updateStatement->close();
+        }
     }
-
-
 }
+
 ?>
 
         
@@ -82,29 +155,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
 									<h5 class="mb-0 text-primary">Edit Profile</h5>
 								</div>
 								<hr>
-								<form class="row g-3">
-									<div class="col-md-6">
-										<label for="inputFirstName" class="form-label">First Name</label>
-										<input type="email" class="form-control" id="inputFirstName">
+							<form class="row g-3" action="" method="post">
+    <div class="col-md-6">
+        <label for="inputFirstName" class="form-label">First Name</label>
+        <input type="text" class="form-control" id="inputFirstName" name="fname" value="<?php echo $studentData['fname']; ?>" required>
+    </div>
+    <div class="col-md-6">
+        <label for="inputLastName" class="form-label">Last Name</label>
+        <input type="text" class="form-control" id="inputLastName" name="lname" value="<?php echo $studentData['lname']; ?>" required>
+    </div>
+    <div class="col-12">
+        <label for="inputAddress" class="form-label">Address</label>
+        <textarea class="form-control" id="inputAddress" name="address" rows="3"><?php echo $studentData['address']; ?></textarea>
+    </div>
+    
+    
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary px-5">Update</button>
+    </div>
+</form>
+
+							</div>
+						</div>
+							<div class="card border-top border-0 border-4 border-primary">
+							<div class="card-body p-5">
+								<div class="card-title d-flex align-items-center">
+									<div><i class="bx bxs-user me-1 font-22 text-primary"></i>
 									</div>
-									<div class="col-md-6">
-										<label for="inputLastName" class="form-label">Last Name</label>
-										<input type="password" class="form-control" id="inputLastName">
-									</div>
-								
-									<div class="col-12">
-										<label for="inputAddress" class="form-label">Address</label>
-										<textarea class="form-control" id="inputAddress" placeholder="Address..." rows="3"></textarea>
-									</div>
-								
-								
-								
-									
-								
-									<div class="col-12">
-										<button type="submit" class="btn btn-primary px-5">Edit</button>
-									</div>
-								</form>
+									<h5 class="mb-0 text-primary">Edit Credentials</h5>
+								</div>
+								<hr>
+					<form class="row g-3" action="" method="post">
+    <div class="col-md-6">
+        <label for="inputPassword" class="form-label">New Password</label>
+        <input type="password" class="form-control" id="inputPassword" name="new_password" required>
+    </div>
+    <div class="col-md-6">
+        <label for="inputConfirmPassword" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" id="inputConfirmPassword" name="confirm_password" required>
+    </div>
+
+    
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary px-5">Edit</button>
+    </div>
+</form>
 							</div>
 						</div>
 			

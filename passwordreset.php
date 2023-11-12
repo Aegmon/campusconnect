@@ -1,7 +1,9 @@
-<?php 
+<?php
 include('connection.php');
+
 $user_id = $_GET['userID'];
 $error = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve user input
     $password = $_POST['password'];
@@ -16,22 +18,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If there are no validation errors, update the password
     if (empty($error)) {
-   
+        // Hash the password
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $updateQuery = "UPDATE userdata SET password = '$password' WHERE userID = '$user_id'";
-        $updateResult = mysqli_query($con, $updateQuery);
+        // Update the password using prepared statement to prevent SQL injection
+        $updateQuery = "UPDATE userdata SET password = ? WHERE userID = ?";
+        $updateStatement = mysqli_prepare($con, $updateQuery);
+        
+        // Bind parameters
+        mysqli_stmt_bind_param($updateStatement, "si", $hashedPassword, $user_id);
 
+        // Execute the statement
+        $updateResult = mysqli_stmt_execute($updateStatement);
+
+        // Check if the update was successful
         if ($updateResult) {
-              $successMessage = 'Password updated successfully';
-        header('location: index.php');
-          
+            $successMessage = 'Password updated successfully';
+            header('location: index.php');
         } else {
             $error = 'Error updating password. Please try again later.';
         }
+
+        // Close the statement
+        mysqli_stmt_close($updateStatement);
     }
 }
 
+// Close the database connection
+mysqli_close($con);
 ?>
+
 
 
 
