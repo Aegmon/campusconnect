@@ -137,7 +137,7 @@ $stmt->execute();
     </div>
     <div class="col-md-6">
         <label for="inputEmail" class="form-label">Birthday</label>
-        <input type="date" class="form-control" id="inputEmail" name="birthday">
+        <input type="date" class="form-control" id="inputDate" name="birthday">
     </div>
 
 
@@ -274,7 +274,19 @@ $con->close();
     
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
+  <script>
+    const inputDate = document.getElementById('inputDate');
+    const today = new Date().toISOString().split('T')[0];
+    inputDate.setAttribute('max', today);
 
+    inputDate.addEventListener('input', function () {
+        if (this.value >= today) {
+            this.setCustomValidity('Please select a date before today.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
 </body>
 
 

@@ -1,46 +1,54 @@
-<?php
+<!-- index.html -->
 
-require __DIR__ . '/google-api/vendor/autoload.php'; // Make sure to install the Google API client library
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Call Example</title>
+</head>
+<body>
+    <h1>Video Call Example</h1>
 
-putenv('GOOGLE_APPLICATION_CREDENTIALS=credentials.json');
+    <video id="localVideo" autoplay playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
 
-$client = new Google_Client();
-$client->useApplicationDefaultCredentials();
-$client->setScopes(['https://www.googleapis.com/auth/calendar']);
+    <button onclick="startVideoCall()">Start Video Call</button>
 
-$service = new Google_Service_Calendar($client);
+    <script>
+        async function startVideoCall() {
+            const userId = prompt('Enter your user ID:');
+            const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
 
-// Create a new calendar event (Google Meet link will be generated)
-$timeZone = 'Asia/Manila'; // Replace with your desired time zone, e.g., 'America/New_York'
+            const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+            const peerConnection = new RTCPeerConnection(configuration);
 
-try {
-    // Create a new calendar event (Google Meet link will be generated)
-    $event = new Google_Service_Calendar_Event([
-        'summary' => 'Meeting Title',
-        'description' => 'Google Meet created via PHP',
-        'start' => [
-            'dateTime' => '2023-12-31T10:00:00',
-            'timeZone' => $timeZone,
-        ],
-        'end' => [
-            'dateTime' => '2023-12-31T11:00:00',
-            'timeZone' => $timeZone,
-        ],
-    ]);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-    $calendarId = 'primary'; // You can use 'primary' for the primary calendar or specify your calendar ID
-    $event = $service->events->insert($calendarId, $event);
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
 
-    // Retrieve the Google Meet link from the inserted event
-    $meetLink = $event->getHangoutLink();
+            await fetch('signaling.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'storeOffer', userId: userId, offer: offer }),
+            });
 
-    echo 'Google Meet created successfully! Link: ' . $meetLink;
-} catch (Google_Service_Exception $e) {
-    // Handle Google Service Exception
-    echo 'Caught Google Service Exception: ', $e->getMessage(), "\n";
-    // Print additional information for debugging
-    print_r($e->getErrors());
-} catch (Exception $e) {
-    // Handle other exceptions
-    echo 'Caught exception: ', $e->getMessage(), "\n";
-}
+            const remoteUserId = prompt('Enter the remote user ID:');
+            const { offer: remoteOffer } = await fetch('signaling.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getOffer', userId: remoteUserId }),
+            }).then(response => response.json());
+
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(remoteOffer));
+
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+
+            console.log('Video call established!');
+        }
+    </script>
+</body>
+</html>

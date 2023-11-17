@@ -23,7 +23,14 @@ $birthday = $student_info['birthdate'];
 $gender = $student_info['gender'];
 $address = $student_info['address'];
 $image = $student_info['image'];
+$sql = "UPDATE userdata SET isOnline = '1' WHERE userID = '$user_check' ";
 
+// Execute the query
+if ($con->query($sql) === TRUE) {
+ 
+} else {
+
+}
 $user_id = $student_info ['user_id'];
 // Fetching section for student ID and section ID
 

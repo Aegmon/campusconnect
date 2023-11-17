@@ -83,28 +83,16 @@ include('session.php');
 						<div class="menu-title">Section</div>
 					</a>
 				</li>
-              -->	</li>
-				 	<li>
-					<a href="content.php">
-						<div class="parent-icon"><i class='bx bx-chat' ></i>
-						</div>
-						<div class="menu-title">Content</div>
-					</a>
-				</li>
+              -->	
+		
                 
 			
+				
 				 	<li>
-					<a href="post.php">
+					<a href="chatbox.php">
 						<div class="parent-icon"><i class='bx bx-chat' ></i>
 						</div>
-						<div class="menu-title">Post</div>
-					</a>
-				</li>
-				 	<li>
-					<a href="concern.php">
-						<div class="parent-icon"><i class='bx bx-chat' ></i>
-						</div>
-						<div class="menu-title">Student Concern</div>
+						<div class="menu-title">Chat box</div>
 					</a>
 				</li>
 				 <!-- <li>
@@ -753,7 +741,7 @@ include('session.php');
 							<img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar">
 							<div class="user-info ps-3">
 								<p class="user-name mb-0 "><?php echo $first_name ." ". $last_name;?></p>
-								<p class="designattion mb-0">Instructor</p>
+								<p class="designattion mb-0">Guidance Counselor</p>
 							</div>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-end">

@@ -136,7 +136,7 @@ if ($result->num_rows > 0) {
 							<div class="d-flex align-items-center">
 									<div>
 												<h2 class="mb-0"><?php echo $online_count; ?></h2>
-										<p class="mb-0">/<?php echo $total_userdata; ?> Students</p>
+										<p class="mb-0">/<?php echo $total_students; ?> Students</p>
 									</div>
 									<div class="ms-auto d-flex align-items-center border radius-10 px-2">
 									  <i class='bx bxs-checkbox font-22 me-1 text-primary'></i><span>Online</span>
@@ -166,33 +166,73 @@ if ($result->num_rows > 0) {
 					    	  <div class="row">
 								    <div class="col-12">
 										<div class="card">
-					<div class="card-body">
+												<div class="card-header">
+													Recent Consultations</div>
+											
+				<div class="card-body">
 						<div class="table-responsive">
-							<table id="example2" class="table table-striped table-bordered">
-								<thead>
-									<tr>
-										<th>Date</th>
-										<th>Name</th>
-										<th>Section</th>
-										<th>Instructor</th>
-										<th>Status</th>
-										<th>Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>October 12,2023</td>
-										<td>Juan tamad</td>
-										<td>Grade-12 Tourism</td>
-										<td>Juan Delacruz</td>
-										<td>	<span class="badge bg-success">Completed</span></td>
-										<td>	<button type="button" class="btn btn-sml btn-primary">View
-										</button></td>
-									</tr>
-							
-								</tbody>
-							
-							</table>
+
+<?php
+$query = "SELECT * FROM ins_consult ic 
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id
+JOIN consultation c ON c.ins_c_id = ic.ins_c_id 
+JOIN student s ON c.stud_id = s.stud_id ORDER BY ic.date desc";
+
+$result = $con->query($query);
+
+if ($result && $result->num_rows > 0) {
+    echo '<table id="example2" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+				    <th>Faculty</th>
+					  <th>Student</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+					<th>End Time</th>
+		
+					<th>Status</th>
+                </tr>
+            </thead>
+            <tbody>';
+while ($row = $result->fetch_assoc()) {
+    $formattedDate = date("F j, Y", strtotime($row['date']));
+    $formattedStartTime = date("h:i A", strtotime($row['starttime']));
+    $formattedEndTime = date("h:i A", strtotime($row['endtime']));
+
+    echo '<tr>
+       <td>' . $row['first_name'] . ' ' . $row['last_name'] . '</td>
+	        <td>' . $row['fname'] . ' ' . $row['lname'] . '</td>
+       <td>' . $formattedDate . '</td>
+       <td>' . $formattedStartTime . '</td>
+       <td>' . $formattedEndTime . '</td>
+       <td>';
+
+    $status = $row['status'];
+
+    if ($status == 'completed') {
+        echo '<span class="badge bg-success">Completed</span>';
+    } elseif ($status == 'pending') {
+        echo '<span class="badge bg-warning">Pending</span>';
+    } else {
+   echo '<span class="badge bg-danger">Rejected</span>';
+      
+    }
+
+    echo '</td>
+    </tr>';
+}
+
+
+    echo '</tbody>
+          </table>';
+} else {
+    echo "No data found.";
+}
+?>
+
+
+
+
 						</div>
 					</div>
 				</div>
@@ -387,75 +427,119 @@ chart.render();
 
 });
 
-var optionsLine = {
-		chart: {
-			foreColor: '#9ba7b2',
-			height: 360,
-			type: 'line',
-			zoom: {
-				enabled: false
-			},
-			dropShadow: {
-				enabled: true,
-				top: 3,
-				left: 2,
-				blur: 4,
-				opacity: 0.1,
-			}
-		},
-		stroke: {
-			curve: 'smooth',
-			width: 5
-		},
-		colors: ["#8833ff", '#29cc39'],
-		series: [{
-			name: "Student",
-			data: [1, 15, 56, 20, 33, 27]
-		}, {
-			name: "Faculty",
-			data: [30, 33, 21, 42, 19, 32]
-		}],
-		title: {
-			text: 'Multiline Chart',
-			align: 'left',
-			offsetY: 25,
-			offsetX: 20
-		},
-		subtitle: {
-			text: 'Statistics',
-			offsetY: 55,
-			offsetX: 20
-		},
-		markers: {
-			size: 4,
-			strokeWidth: 0,
-			hover: {
-				size: 7
-			}
-		},
-		grid: {
-			show: true,
-			padding: {
-				bottom: 0
-			}
-		},
-		labels: ['01/15/2002', '01/16/2002', '01/17/2002', '01/18/2002', '01/19/2002', '01/20/2002'],
-		xaxis: {
-			tooltip: {
-				enabled: false
-			}
-		},
-		legend: {
-			position: 'top',
-			horizontalAlign: 'right',
-			offsetY: -20
-		}
-	}
-	var chartLine = new ApexCharts(document.querySelector('#chart23'), optionsLine);
-	chartLine.render();
+<?php
+function getChartData($con, $table)
+{
+    $query = "SELECT COUNT(*) as count, datecreated FROM $table GROUP BY datecreated";
+    $result = $con->query($query);
+
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        $data[] = [
+            'count' => $row['count'],
+            'datecreated' => $row['datecreated']
+        ];
+    }
+
+    return $data;
+}
+
+$studentData = getChartData($con, 'student');
+
+// Get data for the 'faculty_info' table
+$facultyData = getChartData($con, 'faculty_info');
+
+
+$studentCounts = [];
+$facultyCounts = [];
+$labels = [];
+
+foreach ($studentData as $data) {
+    $labels[] = $data['datecreated'];
+    $studentCounts[] = $data['count'];
+}
+
+foreach ($facultyData as $data) {
+    $facultyCounts[] = $data['count'];
+}
+
+// Create options for the chart
+$optionsLine = [
+    'chart' => [
+        'foreColor' => '#9ba7b2',
+        'height' => 360,
+        'type' => 'line',
+        'zoom' => [
+            'enabled' => false
+        ],
+        'dropShadow' => [
+            'enabled' => true,
+            'top' => 3,
+            'left' => 2,
+            'blur' => 4,
+            'opacity' => 0.1,
+        ]
+    ],
+    'stroke' => [
+        'curve' => 'smooth',
+        'width' => 5
+    ],
+    'colors' => ["#8833ff", '#29cc39'],
+    'series' => [
+        [
+            'name' => "Student",
+            'data' => $studentCounts
+        ],
+        [
+            'name' => "Faculty",
+            'data' => $facultyCounts
+        ]
+    ],
+    'title' => [
+        'text' => 'Multiline Chart',
+        'align' => 'left',
+        'offsetY' => 25,
+        'offsetX' => 20
+    ],
+    'subtitle' => [
+        'text' => 'Statistics',
+        'offsetY' => 55,
+        'offsetX' => 20
+    ],
+    'markers' => [
+        'size' => 4,
+        'strokeWidth' => 0,
+        'hover' => [
+            'size' => 7
+        ]
+    ],
+    'grid' => [
+        'show' => true,
+        'padding' => [
+            'bottom' => 0
+        ]
+    ],
+    'labels' => $labels,
+    'xaxis' => [
+        'tooltip' => [
+            'enabled' => false
+        ]
+    ],
+    'legend' => [
+        'position' => 'top',
+        'horizontalAlign' => 'right',
+        'offsetY' => -20
+    ]
+];
+
+// Convert options to JSON
+$optionsLineJSON = json_encode($optionsLine, JSON_NUMERIC_CHECK);
+
+?>
+
 var options = {
-    series: [1, 55, 41],
-    labels: ['Comments', 'Post', 'Replies'],
+    series: [<?php echo $total_post_replies?>, <?php echo $total_posts?>,  <?php echo $total_likes?>],
+    labels: ['Comments', 'Post', 'Likes'],
     chart: {
         foreColor: '#9ba7b2',
         height: 380,
@@ -563,6 +647,11 @@ chart.render();
 	};
 	var chart = new ApexCharts(document.querySelector("#chart41"), options);
 	chart.render();
+    </script>
+	    <script>
+        var optionsLine = <?php echo $optionsLineJSON; ?>;
+        var chartLine = new ApexCharts(document.querySelector('#chart23'), optionsLine);
+        chartLine.render();
     </script>
 </body>
 

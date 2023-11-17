@@ -121,7 +121,7 @@ while ($row = $result->fetch_assoc()) {
         echo '<span class="badge bg-warning">Pending</span>';
     } else {
    echo '<span class="badge bg-danger">Rejected</span>';
-        echo 'Other Status';
+      
     }
 
     echo '</td>

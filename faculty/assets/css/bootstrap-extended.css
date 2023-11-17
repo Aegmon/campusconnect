@@ -89,8 +89,8 @@ a {
 }
 .btn-primary:hover {
 	color: #fff;
-	background-color: #8531fa;
-	border-color: #8531fa
+	background-color: #037de2;
+	border-color: #037de2
 }
 .btn-check:focus+.btn-primary, .btn-primary:focus {
 	color: #fff;

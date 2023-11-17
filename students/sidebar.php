@@ -1,6 +1,6 @@
 <?php
 include('session.php');
-
+date_default_timezone_set("Asia/Manila");
 ?>
 <!doctype html>
 <html lang="en">
@@ -38,6 +38,27 @@ include('session.php');
 	<link rel="stylesheet" href="assets/css/semi-dark.css" />
 	<link rel="stylesheet" href="assets/css/header-colors.css" />
 	<title>Campus Connect | Student</title>
+<style>
+    @keyframes moveIcon {
+          0%, 100% {
+            transform: translateX(0);
+            color: white;
+        }
+        25%, 75% {
+            transform: translateX(-5px);
+            color: #00ff00; /* Green color */
+        }
+        50% {
+            transform: translateX(5px);
+            color: white;
+        }
+    }
+
+    .moving-icon {
+        animation: moveIcon 0.5s infinite;  /* You can adjust the duration and other properties */
+         color: green;
+    }
+</style>
 
 </head>
 
@@ -766,9 +787,9 @@ include('session.php');
 						<ul class="dropdown-menu dropdown-menu-end">
 							<!-- <li><a class="dropdown-item" href="javascript:;"><i class="bx bx-user"></i><span>Profile</span></a>
 							</li> -->
-							<li><a class="dropdown-item" href="#"><i class="bx bx-cog"></i><span>Settings</span></a>
+							<li><a class="dropdown-item" href="profile.php"><i class="bx bx-cog"></i><span>Settings</span></a>
 							</li>
-							<li><a class="dropdown-item" href="dashboard.php"><i class='bx bx-home-circle'></i><span>Dashboard</span></a>
+							<li><a class="dropdown-item" href="index.php"><i class='bx bx-home-circle'></i><span>Dashboard</span></a>
 							</li>
 							<!-- <li><a class="dropdown-item" href="javascript:;"><i class='bx bx-dollar-circle'></i><span>Earnings</span></a>
 							</li> -->
@@ -777,7 +798,7 @@ include('session.php');
 							<li>
 								<div class="dropdown-divider mb-0"></div>
 							</li>
-							<li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
+						<li><a class="dropdown-item" href="logout.php?userID=<?php  echo $user_check;?>"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
 							</li>
 						</ul>
 					</div>

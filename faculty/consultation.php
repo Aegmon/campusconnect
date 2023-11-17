@@ -18,7 +18,34 @@ if (isset($_POST['register'])) {
     }
 }
 
+if (isset($_POST['done'])) {
+  
+    $ins_c_id = $_POST['ins_c_id'];
 
+    $stmt = $con->prepare("UPDATE `ins_consult` SET c_status ='Done' WHERE ins_c_id=?");
+    $stmt->bind_param("i", $ins_c_id);
+
+    // Execute the prepared statement
+    if ($stmt->execute()) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+if (isset($_POST['cancel'])) {
+  
+    $ins_c_id = $_POST['ins_c_id'];
+
+    $stmt = $con->prepare("UPDATE `ins_consult` SET c_status ='Cancelled' WHERE ins_c_id=?");
+    $stmt->bind_param("i", $ins_c_id);
+
+    // Execute the prepared statement
+    if ($stmt->execute()) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
 
 
 ?>
@@ -59,7 +86,7 @@ if (isset($_POST['register'])) {
                               <form class="row g-3" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>" enctype="multipart/form-data">
   <div class="col-md-12">
         <label for="inputAddress" class="form-label">Date</label>
-        <input class="result form-control" type="date" name="date" placeholder="Date Picker..." >
+        <input class="result form-control" type="date" name="date" id="inputDate" placeholder="Date Picker..." >
     </div>
     <div class="col-md-12">
         <label for="inputAddress" class="form-label">Start Time</label>
@@ -127,6 +154,7 @@ if ($result && $result->num_rows > 0) {
 					<th>End Time</th>
 				<th>Number of Students</th>
 					<th>Status</th>
+								<th>Action</th>
                 </tr>
             </thead>
             <tbody>';
@@ -136,7 +164,24 @@ if ($result && $result->num_rows > 0) {
                 <td>' . $row['starttime'] . '</td>
 				  <td>' . $row['endtime'] . '</td>
 				  		  <td>' . $row['slots'] . '</td>
-						   <td>' . $row['c_status'] . '</td>
+						   <td>'  ;
+						      $status = $row['c_status'];
+
+    if ($status == 'Ongoing') {
+        echo '<span class="badge bg-warning">Ongoing</span>';
+    } elseif ($status == 'Cancelled') {
+        echo '<span class="badge bg-danger">Cancelled</span>';
+    }else{
+		    echo '<span class="badge bg-success">Done</span>';
+	}'</td>';
+			echo '			      <td>
+							  <form action="" method="post">
+							  <input type="hidden" name="ins_c_id" value="'.$row['ins_c_id'].'">
+							  		    <button type="submit" name="done" class="btn btn-success ">Done</button>
+							  <button type="submit" name="cancel" class="btn btn-danger ">Cancel</button>
+		
+							  </form>
+							  </td>
             </tr>';
     }
     echo '</tbody>
@@ -165,7 +210,20 @@ if ($result && $result->num_rows > 0) {
 		</footer>
 	</div>
 	<!--end wrapper-->
-	
+	 <script>
+    const inputDate = document.getElementById('inputDate');
+    const today = new Date().toISOString().split('T')[0];
+    inputDate.setAttribute('min', today);
+
+    inputDate.addEventListener('input', function () {
+        if (this.value <= today) {
+            this.setCustomValidity('Please select a date in the future.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
+
 	<!-- Bootstrap JS -->
 	<script src="assets/js/bootstrap.bundle.min.js"></script>
 	<!--plugins-->

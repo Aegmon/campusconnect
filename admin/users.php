@@ -82,7 +82,7 @@ $query = "SELECT *
           JOIN section_student ss ON s.stud_id = ss.stud_id
           JOIN section sec ON ss.section_id = sec.id
           JOIN strand st ON sec.strand = st.strand_id
-		  JOIN userdata us ON s.user_id = us.userID";
+          JOIN userdata us ON s.user_id = us.userID";
 
 $result = $con->query($query);
 
@@ -118,21 +118,30 @@ if ($result && $result->num_rows > 0) {
             echo '<td>Unknown</td>';
         }
 
-        echo '<td>
-		<form action="" method="post">
-		<input type="hidden" name="user_id"value="' . $row['user_id'] . '">
-		<button type="submit"  name="verify" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
-                <i class="bx bx-plus"></i> Accept
-              </button></td></form>
-              </tr>';
+        echo '<td>';
+        
+        // Check if isverify is 0, then display the "Accept" button
+        if ($row['isverify'] == 0) {
+            echo '<form action="" method="post">
+                      <input type="hidden" name="user_id" value="' . $row['user_id'] . '">
+                      <button type="submit" name="verify" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
+                          <i class="bx bx-plus"></i> Accept
+                      </button>
+                  </form>';
+        } else {
+            // Display a message if isverify is already 1
+            echo 'Accepted';
+        }
+
+        echo '</td></tr>';
     }
     echo '</tbody>
           </table>';
 } else {
     echo "No data found.";
 }
-
 ?>
+
 
 
 

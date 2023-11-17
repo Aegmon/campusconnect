@@ -1,16 +1,18 @@
 
 <?php
+ob_start();
 include("sidebar.php");
 
 if (isset($_POST['Accept'])) {
-  
     $consult_id = $_POST['consult_id'];
     $stmt = $con->prepare("UPDATE `consultation` SET status ='completed' WHERE consult_id=?");
     $stmt->bind_param("i", $consult_id);
 
     // Execute the prepared statement
     if ($stmt->execute()) {
-        echo "New record created successfully";
+        // Redirect to the specified URL
+        header("Location: https://getstream.io/video/demos/?id=comfortable-0eae9c40");
+        exit(); // Ensure that no further code is executed after the redirect
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -24,36 +26,69 @@ if (isset($_POST['Reject'])) {
 
     // Execute the prepared statement
     if ($stmt->execute()) {
-        echo "New record created successfully";
+         
+ 
     } else {
         echo "Error: " . $stmt->error;
     }
 }
 
 ?>
+
  <?php
 
-if (isset($_POST['post'])) {
-  
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['post'])) {
+    // Retrieve form data
     $postTitle = $_POST['postTitle'];
     $postContent = $_POST['postContent'];
     $postFrom = "user";
 
+    // Check if a file is uploaded
+    $fileUploaded = !empty($_FILES["uploadedFile"]["name"]);
 
-    // Prepare and bind the INSERT statement
-    $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from) VALUES (?, ?, ?, ?)");
-   
-    $stmt->bind_param("isss", $user_id, $postTitle, $postContent, $postFrom);
+    // File upload handling
+    if ($fileUploaded) {
+        $targetDir = "../uploads/";
+        $targetFile = $targetDir . basename($_FILES["uploadedFile"]["name"]);
+        $uploadOk = 1;
 
-    // Execute the prepared statement
- if ($stmt->execute()) {
-    echo "New record created successfully";
-} else {
-    echo "Error: " . $stmt->error;
+        // ... (existing code for file checks)
+
+        if ($uploadOk == 0) {
+            echo "Sorry, your file was not uploaded.";
+        } else {
+            if (move_uploaded_file($_FILES["uploadedFile"]["tmp_name"], $targetFile)) {
+                // Prepare and bind the INSERT statement
+                $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from, file_path) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("issss", $user_id, $postTitle, $postContent, $postFrom, $targetFile);
+
+                // Execute the prepared statement
+                if ($stmt->execute()) {
+                    echo "New record created successfully";
+                } else {
+                    echo "Error inserting record: " . $stmt->error;
+                }
+            } else {
+                echo "Sorry, there was an error uploading your file.";
+            }
+        }
+    } else {
+        // If no file is uploaded, insert only the post into the database
+        $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $user_id, $postTitle, $postContent, $postFrom);
+
+        if ($stmt->execute()) {
+            echo "New record created successfully";
+        } else {
+            echo "Error inserting record: " . $stmt->error;
+        }
+    }
+
+    // Close the prepared statement
+    $stmt->close();
 }
 
-
-}
    if (isset($_POST['reply']) ) {
       $replyContent = $_POST['replyContent'];
         $postID = $_POST['postID']; 
@@ -74,6 +109,7 @@ if (isset($_POST['post'])) {
             echo "Error: " . $stmt . "<br>" . $con->error;
         }
     }
+    ob_end_flush(); 
 ?>
        
         
@@ -98,24 +134,32 @@ if (isset($_POST['post'])) {
         <!-- <h6 class="mb-0 text-uppercase">DataTable Import</h6> -->
         <hr/>
         <div class="row">
-            <div class="col-9">
-        <div class="card">
-            <div class="card-body">
-                <form action="" method="post">
-                    <div class="form-group">
-                        <label for="postTitle">Post Title</label>
-                        <input type="text" class="form-control" id="postTitle" name="postTitle" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="postContent">Post Content</label>
-                        <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
-                    </div>
-                    <div class="form-group mt-3">
-                        <button type="submit" name="post" class="btn btn-primary">Post</button>
-                    </div>
-                </form>
-            </div>
-            </div>
+        <div class="col-12 col-md-9">
+<div class="card">
+        <div class="card-body">
+       <form action="" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="postTitle">Post Title</label>
+        <input type="text" class="form-control" id="postTitle" name="postTitle" required>
+    </div>
+    <div class="form-group">
+        <label for="postContent">Post Content</label>
+        <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="uploadedFile">Attachment</label>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="uploadedFile" name="uploadedFile" >
+          
+        </div>
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" name="post" class="btn btn-primary">Post</button>
+    </div>
+</form>
+
+        </div>
+    </div>
         <?php
         function time_ago($datetime, $full = false) {
     $now = new DateTime;
@@ -147,26 +191,45 @@ if (isset($_POST['post'])) {
     return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
-         $result = $con->query("SELECT * FROM posts where isapproved = '1'order by post_date desc");
+        $result = $con->query("SELECT p.*, 
+    CASE 
+        WHEN p.post_from = 'admin' THEN 'Administrator'
+        ELSE COALESCE(
+            NULLIF(CONCAT(s.fname, ' ', NULLIF(s.lname, '')), ' '), 
+            NULLIF(CONCAT(f.first_name, ' ', NULLIF(f.last_name, '')), ' '),
+            s.fname,
+            f.first_name
+        )
+    END AS name 
+FROM posts p 
+LEFT JOIN faculty_info f ON p.user_id = f.userID 
+LEFT JOIN student s ON p.user_id = s.user_id 
+WHERE p.isapproved = '1'
+ORDER BY p.post_date DESC;;
+");
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $postTitle = $row["post_title"];
                 $postContent = $row["post_content"];
                 $postDate = $row["post_date"];
                 $post_id = $row["post_id"];
-                $postFrom = $row["post_from"]; // Assuming 'admin' or 'user' is stored in the 'post_from' field
-
+                $postFrom = $row["post_from"]; 
+ $likes = $row["likes"]; // new
                 echo '<div class="card mb-3">';
                 echo '<div class="card-body">';
                 // Display the post with a header for the post source
                 if ($postFrom === 'user') {
                     echo '<div style="display: flex; align-items: center; margin-bottom: 10px;">
                             <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                            <h6 class="text-dark m-0">'. $first_name .' '. $last_name .':</h6>
+                            <h6 class="text-dark m-0">'.  $row["name"] .':</h6>
                         </div>';
                 }
                 echo '<h5 class="card-title">' . $postTitle . '</h5>';
                 echo '<p class="card-text">' . $postContent . '</p>';
+                if (!empty($row["file_path"])) {
+    $fileName = basename($row["file_path"]);
+    echo '<a href="' . $row["file_path"] . '" class="btn btn-primary btn-sm" download><i class="bx bx-download"></i>  (' . $fileName . ')</a>';
+}
                 echo '<div class="card-footer text-muted" style="display: flex; justify-content: space-between; align-items: center;">
                         <small>' . time_ago($postDate) . '</small>
                         <button type="button" class="btn btn-primary btn-sm" onclick="toggleReply(this)">Reply</button>
@@ -178,7 +241,9 @@ if (isset($_POST['post'])) {
                             <button type="submit" name="reply" class="btn btn-primary btn-sm mt-2">Reply</button>
                         </form>
                     </div>';
-
+echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post-id="' . $post_id . '" onclick="likePost(' . $post_id . ')">
+        <i class="fadeIn animated bx bx-like"></i> Like (' . $likes . ')
+      </button>';
                     $replyResult = $con->query("SELECT * FROM post_replies WHERE post_id = $post_id");
         if ($replyResult->num_rows > 0) {
             echo '<ul class="list-group list-group-flush"  margin-top: 20px;">';
@@ -208,8 +273,8 @@ if (isset($_POST['post'])) {
             echo "0 results";
         }
         ?>
-    </div>
-      <div class="col-3">
+		   </div>
+        <div class="col-md-3 col-sm-6">
                          <div class="card ">
 							<div class="card-header text-center">
                               	<h5 class="mt-2">Scheduled Consultation</h5>
@@ -303,7 +368,8 @@ if ($status == 'completed') {
                 </div>
                 <div class="modal-footer">
                      <button  type="submit" name="Reject" class="btn btn-danger px-5">Reject</button>
-                     <button  type="submit" name="Accept" class="btn btn-primary px-5">Accept</button>
+                      <!--<a  href="https://getstream.io/video/demos/?id=comfortable-0eae9c40" name="Accept" class="btn btn-primary px-5">Accept</a>-->
+                              <button type="submit" name="Accept" class="btn btn-primary px-5">Call Now</a>
                 </div>
             </div>
         </div>

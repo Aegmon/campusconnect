@@ -14,7 +14,14 @@ $query_faculty_info = "SELECT * FROM faculty_info WHERE userID='$user_check'";
 $ses_sql_faculty_info = mysqli_query($con, $query_faculty_info);
 $faculty_info = mysqli_fetch_assoc($ses_sql_faculty_info);
 $currentUserId = $_SESSION['userID'];
-// Variables for faculty info
+$sql = "UPDATE userdata SET isOnline = '1' WHERE userID = '$user_check' ";
+
+// Execute the query
+if ($con->query($sql) === TRUE) {
+ 
+} else {
+
+}
 $faculty_id = $faculty_info['faculty_id'];
 $userID = $faculty_info['userID'];
 $first_name = $faculty_info['first_name'];

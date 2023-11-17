@@ -7,7 +7,7 @@ include("sidebar.php");
 if (isset($_POST['consult'])) {
   
     $ins_c_id = $_POST['ins_c_id'];
-    $stmt = $con->prepare("INSERT INTO consultation (stud_id, inc_c_id) VALUES (?, ?)");
+    $stmt = $con->prepare("INSERT INTO consultation (stud_id, ins_c_id) VALUES (?, ?)");
    
     $stmt->bind_param("ii", $student_id, $ins_c_id);
 
@@ -20,27 +20,57 @@ if (isset($_POST['consult'])) {
 }
 
 
-if (isset($_POST['post'])) {
-  
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['post'])) {
+    // Retrieve form data
     $postTitle = $_POST['postTitle'];
     $postContent = $_POST['postContent'];
     $postFrom = "user";
 
+    // Check if a file is uploaded
+    $fileUploaded = !empty($_FILES["uploadedFile"]["name"]);
 
-    // Prepare and bind the INSERT statement
-    $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from) VALUES (?, ?, ?, ?)");
-   
-    $stmt->bind_param("isss", $user_id, $postTitle, $postContent, $postFrom);
+    // File upload handling
+    if ($fileUploaded) {
+        $targetDir = "../uploads/";
+        $targetFile = $targetDir . basename($_FILES["uploadedFile"]["name"]);
+        $uploadOk = 1;
 
-    // Execute the prepared statement
- if ($stmt->execute()) {
-    echo "New record created successfully";
-} else {
-    echo "Error: " . $stmt->error;
+        // ... (existing code for file checks)
+
+        if ($uploadOk == 0) {
+            echo "Sorry, your file was not uploaded.";
+        } else {
+            if (move_uploaded_file($_FILES["uploadedFile"]["tmp_name"], $targetFile)) {
+                // Prepare and bind the INSERT statement
+                $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from, file_path) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("issss", $user_id, $postTitle, $postContent, $postFrom, $targetFile);
+
+                // Execute the prepared statement
+                if ($stmt->execute()) {
+                    echo "New record created successfully";
+                } else {
+                    echo "Error inserting record: " . $stmt->error;
+                }
+            } else {
+                echo "Sorry, there was an error uploading your file.";
+            }
+        }
+    } else {
+        // If no file is uploaded, insert only the post into the database
+        $stmt = $con->prepare("INSERT INTO posts (user_id, post_title, post_content, post_from) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $user_id, $postTitle, $postContent, $postFrom);
+
+        if ($stmt->execute()) {
+            echo "New record created successfully";
+        } else {
+            echo "Error inserting record: " . $stmt->error;
+        }
+    }
+
+    // Close the prepared statement
+    $stmt->close();
 }
 
-
-}
    if (isset($_POST['reply']) ) {
       $replyContent = $_POST['replyContent'];
         $postID = $_POST['postID']; 
@@ -68,24 +98,32 @@ if (isset($_POST['post'])) {
 		<div class="page-wrapper">
 			<div class="page-content">
 			<div class="row">	
-                	<div class="col-9">	
- <div class="card">
-            <div class="card-body">
-                <form action="" method="post">
-                    <div class="form-group">
-                        <label for="postTitle">Post Title</label>
-                        <input type="text" class="form-control" id="postTitle" name="postTitle" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="postContent">Post Content</label>
-                        <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
-                    </div>
-                    <div class="form-group mt-3">
-                        <button type="submit" name="post" class="btn btn-primary">Post</button>
-                    </div>
-                </form>
-            </div>
-            </div>
+                 <div class="col-12 col-md-9">
+<div class="card">
+        <div class="card-body">
+         <form action="" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="postTitle">Post Title</label>
+        <input type="text" class="form-control" id="postTitle" name="postTitle" required>
+    </div>
+    <div class="form-group">
+        <label for="postContent">Post Content</label>
+        <textarea class="form-control" id="postContent" name="postContent" rows="4" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="uploadedFile">Attachment</label>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="uploadedFile" name="uploadedFile" >
+    
+        </div>
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" name="post" class="btn btn-primary">Post</button>
+    </div>
+</form>
+
+        </div>
+    </div>
         <?php
         function time_ago($datetime, $full = false) {
     $now = new DateTime;
@@ -152,6 +190,10 @@ ORDER BY p.post_date DESC;;
                 }
                 echo '<h5 class="card-title">' . $postTitle . '</h5>';
                 echo '<p class="card-text">' . $postContent . '</p>';
+                if (!empty($row["file_path"])) {
+    $fileName = basename($row["file_path"]);
+    echo '<a href="' . $row["file_path"] . '" class="btn btn-primary btn-sm" download><i class="bx bx-download"></i>  (' . $fileName . ')</a>';
+}
                 echo '<div class="card-footer text-muted" style="display: flex; justify-content: space-between; align-items: center;">
                         <small>' . time_ago($postDate) . '</small>
                         <button type="button" class="btn btn-primary btn-sm" onclick="toggleReply(this)">Reply</button>
@@ -202,6 +244,96 @@ echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post
                               	<h5 class="mt-2">Scheduled Consultation</h5>
                                 		</div>    
                           </div>
+                          
+                          
+                          
+                          <?php
+
+$query = "SELECT * FROM ins_consult ic 
+JOIN consultation c ON c.ins_c_id = ic.ins_c_id
+JOIN student s ON c.stud_id = s.stud_id 
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id WHERE s.stud_id = '$student_id' AND c.status='completed'";
+
+$result = $con->query($query);
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {?>
+ <a href="https://getstream.io/video/demos/?id=comfortable-0eae9c40" class="text-dark">
+           <div class="row">
+              <div class="card radius-10 bg-gradient-reds">
+							<div class="card-body">
+								<div class="d-flex align-items-center">
+<div style="font-size: 2em;">
+    <i class='bx bx-phone-call moving-icon'></i>
+</div>
+									<div class="flex-grow-1 ms-3">
+                                          <div class="row">
+                                        <div class="col-9">
+										<h5 class="mt-0"><?php echo $row['first_name'].' '.$row['last_name']?></h5>
+                                        
+                                        </div>
+                                         <div class="col-3">
+                                         
+                                            </div>
+                                          </div>
+										<p class="mb-0"><?php $originalDate = $row['date'];
+
+// Convert the date to the desired format
+$formattedDate = date("F j, Y", strtotime($originalDate));
+
+// Output the formatted date
+echo $formattedDate;?></p>
+                                        <div class="row">
+                                        <div class="col-9">
+                                       <p class="mb-0"><?php
+// Assuming $row['starttime'] and $row['endtime'] contain the times in some format
+$startTime = $row['starttime'];
+$endTime = $row['endtime'];
+
+// Convert the times to the desired format
+$formattedStartTime = date("h:i A", strtotime($startTime));
+$formattedEndTime = date("h:i A", strtotime($endTime));
+
+// Concatenate and output the formatted times
+echo $formattedStartTime . ' - ' . $formattedEndTime;
+?></p>
+                                        </div>
+                                              <div class="col-3">
+                  
+
+                                        </div>
+                                        </div>
+                                  
+									</div>
+                                            
+							</div>
+					</div>
+			</div>
+        </div>
+        </a>
+  
+<?php }}else{
+    Echo "";
+}?>
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
 <?php
 
 $query = "SELECT * FROM ins_consult ic 
@@ -227,38 +359,39 @@ $formattedDate = date("F j, Y", strtotime($originalDate));
 
 // Output the formatted date
 echo $formattedDate;?></p>
-                                        <div class="row">
-                                        <div class="col-9">
-                                       <p class="mb-0"><?php
-// Assuming $row['starttime'] and $row['endtime'] contain the times in some format
-$startTime = $row['starttime'];
-$endTime = $row['endtime'];
+                                     <div class="row">
+    <div class="col-8">
+        <p class="mb-0">
+            <?php
+            // Assuming $row['starttime'] and $row['endtime'] contain the times in some format
+            $startTime = $row['starttime'];
+            $endTime = $row['endtime'];
 
-// Convert the times to the desired format
-$formattedStartTime = date("h:i A", strtotime($startTime));
-$formattedEndTime = date("h:i A", strtotime($endTime));
+            // Convert the times to the desired format
+            $formattedStartTime = date("h:i A", strtotime($startTime));
+            $formattedEndTime = date("h:i A", strtotime($endTime));
 
-// Concatenate and output the formatted times
-echo $formattedStartTime . ' - ' . $formattedEndTime;
-?></p>
-                                        </div>
-                                              <div class="col-3">
-                                     		<?php
-// Assuming $row['status'] contains the status information
+            // Concatenate and output the formatted times
+            echo $formattedStartTime . ' - ' . $formattedEndTime;
+            ?>
+        </p>
+    </div>
+    <div class="col-4">
+        <?php
+        // Assuming $row['status'] contains the status information
 
-$status = $row['c_status'];
+        $status = $row['c_status'];
 
-if ($status == 'Ongoing') {
-    echo '<span class="badge bg-success">Ongoing</span>';
-} elseif ($status == 'Cancelled') {
-    echo '<span class="badge bg-danger">Cancelled</span>';
-} else {
-
-}
-?>
-
-                                        </div>
-                                        </div>
+        if ($status == 'Ongoing') {
+            echo '<span class="badge bg-success ">Ongoing</span>';
+        } elseif ($status == 'Cancelled') {
+            echo '<span class="badge bg-danger">Cancelled</span>';
+        } else {
+            // Additional conditions if needed
+        }
+        ?>
+    </div>
+</div>
                                   
 									</div>
                                             
@@ -329,7 +462,16 @@ function likePost(postID) {
 
 
 </script>
-
+   <script>
+    function toggleReply(button) {
+        var replyField = button.parentNode.nextElementSibling;
+        if (replyField.style.display === "none") {
+            replyField.style.display = "block";
+        } else {
+            replyField.style.display = "none";
+        }
+    }
+</script>
 	<script src="assets/js/bootstrap.bundle.min.js"></script>
 	<!--plugins-->
 	<script src="assets/js/jquery.min.js"></script>

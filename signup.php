@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             // Image upload handling
-            $image_upload_dir = '../img/'; // Directory where images will be stored
+            $image_upload_dir = 'img/'; // Directory where images will be stored
             $image_name = $_FILES['image']['name'];
             $image_tmp_name = $_FILES['image']['tmp_name'];
 
@@ -104,7 +104,7 @@ require 'google-api/vendor/autoload.php';
     // Enter your Client Secrect
     $client->setClientSecret('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');
     // Enter the Redirect URL
-    $client->setRedirectUri('http://localhost/campusconnect/signup.php');
+    $client->setRedirectUri('https://campusconnect.website/signup.php');
     // Adding those scopes which we want to get (email & profile Information)
     $client->addScope("email");
     $client->addScope("profile");

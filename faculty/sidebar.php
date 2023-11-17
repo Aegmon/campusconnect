@@ -1,6 +1,6 @@
 <?php
 include('session.php');
-
+date_default_timezone_set("Asia/Manila");
 ?>
 <!doctype html>
 <html lang="en">
@@ -32,6 +32,23 @@ include('session.php');
 	<link rel="stylesheet" href="assets/css/semi-dark.css" />
 	<link rel="stylesheet" href="assets/css/header-colors.css" />
 	<title>Campus Connect | Faculty</title>
+	<style>
+    @keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
+
+    .shake-animation:hover {
+        animation: shake 0.5s;
+    }
+</style>
 </head>
 
 <body>
@@ -769,7 +786,7 @@ include('session.php');
 							<li>
 								<div class="dropdown-divider mb-0"></div>
 							</li>
-							<li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
+							<li><a class="dropdown-item" href="logout.php?userID=<?php  echo $user_check;?>"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
 							</li>
 						</ul>
 					</div>

@@ -91,20 +91,21 @@ mysqli_close($con);
 										</div>
 										<h4 class="mt-5 font-weight-bold">Genrate New Password</h4>
 										<p class="text-muted">We received your reset password request. Please enter your new password!</p>
-										                <form method="POST" action="">
-										<div class="mb-3 mt-5">
-											<label class="form-label">New Password</label>
-											<input type="text" class="form-control" placeholder="Enter new password" name="password" />
-										</div>
-										<div class="mb-3">
-											<label class="form-label">Confirm Password</label>
-											<input type="text" class="form-control" placeholder="Confirm password"  name="cpassword"/>
-										</div>
-										<div class="d-grid gap-2">
-											<button type="button" name="reset"class="btn btn-primary">Change Password</button> 
-											<a href="index.php" class="btn btn-light"><i class='bx bx-arrow-back mr-1'></i>Back to Login</a>
-										</div>
-										   </form>
+										    <form method="POST" action="">
+    <div class="mb-3 mt-5">
+        <label class="form-label">New Password</label>
+        <input type="password" class="form-control" placeholder="Enter new password" name="password" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" placeholder="Confirm password" name="cpassword" />
+    </div>
+    <div class="d-grid gap-2">
+        <button type="submit" name="reset" class="btn btn-primary">Change Password</button>
+        <a href="index.php" class="btn btn-light"><i class='bx bx-arrow-back mr-1'></i>Back to Login</a>
+    </div>
+</form>
+
 			 		 <?php
 
                  if ($error) {
