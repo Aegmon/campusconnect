@@ -195,7 +195,7 @@ if ($result->num_rows > 0) {
 	</script>
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script>
 	    var receiverId = 0; // Initialize receiverId
 
@@ -217,6 +217,7 @@ if ($result->num_rows > 0) {
     }
 
 $('#send-message-btn').on('click', function() {
+        console.log('Send button clicked');
     document.getElementById('receiverIdField').value = receiverId; // Set the value of the input field
     const message = $('#message-input').val(); // Get the message from the input field
     const fileInput = $('#fileInput')[0].files[0]; // Get the selected file
@@ -254,7 +255,7 @@ $('#send-message-btn').on('click', function() {
                 contentType: false,
                 processData: false,
                 success: function(response) {
-                          console.log(response);
+                    console.log('AJAX Success - Response:', response);
                     $('#message-input').val('');
 
                     // Fetch and display updated messages
@@ -271,10 +272,10 @@ $('#send-message-btn').on('click', function() {
                 url: 'insert_message.php', // Create a new PHP script for handling the message insertion
                 data: { receiverId: receiverId, message: message },
                 success: function(response) {
-                      console.log(response);
+                      console.log('AJAX Success - Response:', response);
                     $('#message-input').val('');
 
-                    // Fetch and display updated messages
+                 
                     fetchAndUpdateMessages(receiverId);
                 },
                 error: function(error) {

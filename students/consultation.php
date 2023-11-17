@@ -121,7 +121,11 @@ while ($row = $result->fetch_assoc()) {
         echo '<span class="badge bg-warning">Pending</span>';
     } else {
    echo '<span class="badge bg-danger">Rejected</span>';
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> 794b550d089586c14239d1411068762e01fd2162
     }
 
     echo '</td>
