@@ -30,13 +30,22 @@ if (isset($_POST['receiverId']) && !empty($_POST['receiverId'])) {
             echo "<div class='d-flex'>";
      
             echo "<div class='flex-grow-1 ms-2'>";
-            echo "<p class='chat-$calignment-msg'>$messageText</p>"; // Display the message text
+            
+            // Display the message text
+            echo "<p class='chat-$calignment-msg'>";
 
-            // Display download button if there is a file attached
-            if (!empty($filePath)) {
-                echo "<p>Attachment: <strong>$fileName</strong></p>";
-                echo "<a href='$filePath' class='btn btn-primary btn-sm' download><i class='bx bx-download'></i></a>";
+            // Check if there is a message text
+            if (!empty($messageText)) {
+                echo "$messageText ";
             }
+
+            // Display paper clip icon link if there is a file attached
+            if (!empty($filePath)) {
+                // Add a shaking animation to the paper clip icon
+                echo "<a href='$filePath' download class='shake-animation'><i class='bx bx-paperclip'></i></a>";
+            }
+
+            echo "</p>";
 
             echo '</div>';
             echo '</div>';
@@ -51,9 +60,4 @@ if (isset($_POST['receiverId']) && !empty($_POST['receiverId'])) {
 
 // Close the database connection
 $con->close();
-
 ?>
-
-
-
-					

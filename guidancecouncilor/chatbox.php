@@ -1,76 +1,6 @@
 <?php
 include("sidebar.php");
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['message'])) {
-    // Get the message from the form
-    $message = $_POST['message'];
-
-    // Get the IDs of the sender and receiver (you may need to change this based on your application)
-    $senderId = $currentUserId; // Assuming the sender's ID is 1, you should replace it with the actual sender's ID
-    $receiverId = isset($_POST['receiverId']) ? $_POST['receiverId'] : 0;
-
-    // Check if a file is uploaded
-    $fileUploaded = !empty($_FILES["uploadedFile"]["name"]);
-    
-    // Handle file upload if a file is uploaded
-    if ($fileUploaded) {
-        $targetDir = "../uploads/";
-        $targetFile = $targetDir . basename($_FILES["uploadedFile"]["name"]);
-        $uploadOk = 1;
-
-        // Check if file already exists
-        if (file_exists($targetFile)) {
-            echo "Sorry, file already exists.";
-            $uploadOk = 0;
-        }
-
-        // Check file size (adjust the limit as needed)
-        if ($_FILES["uploadedFile"]["size"] > 5000000) { // Increased to 5 MB
-            echo "Sorry, your file is too large.";
-            $uploadOk = 0;
-        }
-
-        // Allow certain file formats
-        $allowedFormats = array("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx");
-        $fileFormat = pathinfo($targetFile, PATHINFO_EXTENSION);
-        if (!in_array(strtolower($fileFormat), $allowedFormats)) {
-            echo "Sorry, only PDF, DOC, DOCX, XLS, XLSX, PPT, and PPTX files are allowed.";
-            $uploadOk = 0;
-        }
-
-        // Check if $uploadOk is set to 0 by an error
-        if ($uploadOk == 0) {
-            echo "Sorry, your file was not uploaded.";
-        } else {
-            // If everything is ok, try to upload file and insert message into the database
-            if (move_uploaded_file($_FILES["uploadedFile"]["tmp_name"], $targetFile)) {
-                // Create the SQL query to insert the message and file info into the database
-                $insertQuery = "INSERT INTO messages (sender_id, receiver_id, message_text, file_path, timestamp) 
-                                VALUES ('$senderId', '$receiverId', '$message', '$targetFile', NOW())";
-
-                // Execute the query and check if it was successful
-                if ($con->query($insertQuery) === TRUE) {
-                    echo "New record created successfully";
-                } else {
-                    echo "Error: " . $insertQuery . "<br>" . $con->error;
-                }
-            } else {
-                echo "Sorry, there was an error uploading your file.";
-            }
-        }
-    } else {
-        // If no file is uploaded, insert only the message into the database
-        $insertQuery = "INSERT INTO messages (sender_id, receiver_id, message_text, timestamp) 
-                        VALUES ('$senderId', '$receiverId', '$message', NOW())";
-
-        // Execute the query and check if it was successful
-        if ($con->query($insertQuery) === TRUE) {
-            echo "New record created successfully";
-        } else {
-            echo "Error: " . $insertQuery . "<br>" . $con->error;
-        }
-    }
-}
 ?>
 
 
@@ -116,21 +46,29 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['search'])) {
     $searchTerm = $_GET['search'];
 
     // Perform the search and update the query
-    $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name, s.fname as student_fname, s.lname as student_lname, g.fname as counselor_fname, g.lname as counselor_lname
+    $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name, s.fname as student_fname, s.lname as student_lname, g.fname as counselor_fname, g.lname as counselor_lname,
+              MAX(m.timestamp) as last_message_timestamp
               FROM userdata u
               LEFT JOIN faculty_info f ON u.userID = f.userID
               LEFT JOIN student s ON u.userID = s.user_id
               LEFT JOIN guidancecounselor g ON u.userID = g.userID
+              LEFT JOIN messages m ON (u.userID = m.sender_id OR u.userID = m.receiver_id)
               WHERE u.userID != $currentUserId
-              AND (f.first_name LIKE '%$searchTerm%' OR f.last_name LIKE '%$searchTerm%' OR s.fname LIKE '%$searchTerm%' OR s.lname LIKE '%$searchTerm%' OR g.fname LIKE '%$searchTerm%' OR g.lname LIKE '%$searchTerm%')";
+              AND (f.first_name LIKE '%$searchTerm%' OR f.last_name LIKE '%$searchTerm%' OR s.fname LIKE '%$searchTerm%' OR s.lname LIKE '%$searchTerm%' OR g.fname LIKE '%$searchTerm%' OR g.lname LIKE '%$searchTerm%')
+              GROUP BY u.userID
+              ORDER BY last_message_timestamp DESC";
 } else {
     // If no search term is provided, use the default query
-    $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name, s.fname as student_fname, s.lname as student_lname, g.fname as counselor_fname, g.lname as counselor_lname
+    $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name, s.fname as student_fname, s.lname as student_lname, g.fname as counselor_fname, g.lname as counselor_lname,
+              MAX(m.timestamp) as last_message_timestamp
               FROM userdata u
               LEFT JOIN faculty_info f ON u.userID = f.userID
               LEFT JOIN student s ON u.userID = s.user_id
               LEFT JOIN guidancecounselor g ON u.userID = g.userID
-              WHERE u.userID != $currentUserId";
+              LEFT JOIN messages m ON (u.userID = m.sender_id OR u.userID = m.receiver_id)
+              WHERE u.userID != $currentUserId
+              GROUP BY u.userID
+              ORDER BY last_message_timestamp DESC";
 }
 
 // Execute the query and store the result in $result
@@ -140,7 +78,7 @@ $result = $con->query($query);
 $activeUserId = 0;
 
 // Your code to get the most recent chat user ID
-$queryRecentChat = "SELECT * FROM messages ORDER BY timestamp DESC LIMIT 1";
+$queryRecentChat = "SELECT sender_id, receiver_id FROM messages ORDER BY timestamp DESC LIMIT 1";
 $resultRecentChat = $con->query($queryRecentChat);
 
 // Check if the query returns any rows
@@ -207,7 +145,7 @@ if ($result->num_rows > 0) {
 					</div>
 					<div class="chat-footer d-flex align-items-center">
     <div class="flex-grow-1 pe-2">
- <form method="post" action="" id="chatForm" enctype="multipart/form-data">
+
     <div class="input-group">
           <div class="input-group-append">
             <label for="fileInput" class="btn btn-secondary">
@@ -215,12 +153,12 @@ if ($result->num_rows > 0) {
             </label>
             <input type="file" name="uploadedFile" id="fileInput" style="display:none;">
         </div>
-        <input type="text" class="form-control" name="message" id="messageInput" placeholder="Type a message">
+        <input type="text" class="form-control" name="message" id="message-input" placeholder="Type a message">
       
         <input type="hidden" name="receiverId" id="receiverIdField" value="">
-        <button type="submit" class="btn btn-primary">Send</button>
+        <button type="submit" id="send-message-btn" class="btn btn-primary">Send</button>
     </div>
-</form>
+
 
 
     </div>
@@ -257,7 +195,7 @@ if ($result->num_rows > 0) {
 	</script>
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script>
 	    var receiverId = 0; // Initialize receiverId
 
@@ -271,20 +209,113 @@ if ($result->num_rows > 0) {
             url: 'fetch_messages.php', // Replace with the actual URL for fetching messages
             data: { receiverId: receiverId },
             success: function(response) {
+                console.log(response);
                 $(".chat-content").html(response); // Update the chat content with the fetched messages
+                 scrollToLastMessage();
             }
         });
     }
-  function fetchMessagesContinuously() {
-        setInterval(function() {
-            if (receiverId !== 0) {
-                setReceiverId(receiverId);
-            }
-        }, 5000); // Adjust the interval as necessary (in milliseconds)
-    }
 
-    // Call the function to fetch messages continuously
-    fetchMessagesContinuously();
+$('#send-message-btn').on('click', function() {
+        console.log('Send button clicked');
+    document.getElementById('receiverIdField').value = receiverId; // Set the value of the input field
+    const message = $('#message-input').val(); // Get the message from the input field
+    const fileInput = $('#fileInput')[0].files[0]; // Get the selected file
+
+    // Check if the message is not empty
+    if (message.trim() !== '') {
+        // Check if a file is selected
+        if (fileInput) {
+          const allowedFileTypes = [
+                'application/pdf',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-powerpoint',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'application/msword', // MIME type for DOC files
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // MIME type for DOCX files
+            ];
+
+            if (allowedFileTypes.indexOf(fileInput.type) === -1) {
+                alert('Invalid file type. Please select a PDF, Excel, or PowerPoint file.');
+                return;
+            }
+
+            // Create a FormData object to send both text and file data
+            var formData = new FormData();
+            formData.append('receiverId', receiverId);
+            formData.append('message', message);
+            formData.append('uploadedFile', fileInput);
+
+            // AJAX request to send the message and file
+            $.ajax({
+                type: 'POST',
+                url: 'insert_message.php', // Create a new PHP script for handling the message insertion
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    console.log('AJAX Success - Response:', response);
+                    $('#message-input').val('');
+
+                    // Fetch and display updated messages
+                    fetchAndUpdateMessages(receiverId);
+                },
+                error: function(error) {
+                    console.error('Error sending message:', error);
+                }
+            });
+        } else {
+       
+            $.ajax({
+                type: 'POST',
+                url: 'insert_message.php', // Create a new PHP script for handling the message insertion
+                data: { receiverId: receiverId, message: message },
+                success: function(response) {
+                      console.log('AJAX Success - Response:', response);
+                    $('#message-input').val('');
+
+                 
+                    fetchAndUpdateMessages(receiverId);
+                },
+                error: function(error) {
+                    console.error('Error sending message:', error);
+                }
+            });
+        }
+    } else {
+        // Handle the case when the message is empty
+        alert('Please enter a message.');
+    }
+});
+
+   // Function to fetch and update messages (reuse this function)
+function fetchAndUpdateMessages(receiverId) {
+    // AJAX request to fetch and display user messages
+    $.ajax({
+        type: 'POST',
+        url: 'fetch_messages.php', // Replace with the actual URL for fetching messages
+        data: { receiverId: receiverId },
+        success: function(response) {
+            console.log(response);
+            $(".chat-content").html(response); // Update the chat content with the fetched messages
+
+            // Scroll to the last message
+            scrollToLastMessage();
+        }
+    });
+}
+function scrollToLastMessage() {
+    var chatContent = $(".chat-content");
+    var lastMessage = chatContent.children().last();
+
+    if (lastMessage.length > 0) {
+        chatContent.scrollTop(lastMessage.offset().top);
+    }
+}
+
+
+
     $(document).ready(function() {
         // Default content for chat content
         var defaultUsername = "";
@@ -304,17 +335,7 @@ if ($result->num_rows > 0) {
             var timestamp = $(this).find(".chat-time").text();
 
             // Update the chat content
-            $(".chat-content").html(`
-                <div class="chat-content-leftside">
-                    <div class="d-flex">
-                        <img src="assets/images/avatars/admin.png" width="48" height="48" class="rounded-circle" alt="" />
-                        <div class="flex-grow-1 ms-2">
-                            <p class="mb-0 chat-time">${username}, ${timestamp}</p>
-                            <p class="chat-left-msg">${message}</p>
-                        </div>
-                    </div>
-                </div>
-            `);
+       
 
             // Update the chat header
             $(".chat-header h4").text(username);
