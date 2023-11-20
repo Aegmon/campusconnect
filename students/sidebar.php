@@ -58,6 +58,11 @@ date_default_timezone_set("Asia/Manila");
         animation: moveIcon 0.5s infinite;  /* You can adjust the duration and other properties */
          color: green;
     }
+
+.list-group-item.has-unread-messages {
+    font-weight: bold; /* Add your preferred styling for unread messages */
+    color: #ff0000; /* Add your preferred color for unread messages */
+}
 </style>
 
 </head>
@@ -127,6 +132,14 @@ date_default_timezone_set("Asia/Manila");
 						</div>
 						<div class="menu-title">My Consultation</div>
 					</a>
+						</li>
+					<li>
+					<a href="insights.php">
+						<div class="parent-icon"><i class='bx bx-bar-chart-alt-2' ></i>
+						</div>
+						<div class="menu-title">Insights</div>
+					</a>
+				</li>
 				</li>
 					<li>
 					<a href="profile.php">

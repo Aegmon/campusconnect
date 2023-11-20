@@ -123,6 +123,13 @@ date_default_timezone_set("Asia/Manila");
 						<div class="menu-title">Consultation</div>
 					</a>
 				</li>
+				  	<li>
+					<a href="insights.php">
+						<div class="parent-icon"><i class='bx bx-bar-chart-alt-2' ></i>
+						</div>
+						<div class="menu-title">Insights</div>
+					</a>
+				</li>
 				 <!-- <li>
 					<a href="javascript:;" class="has-arrow">
 						<div class="parent-icon"><i class='bx bx-group' ></i>

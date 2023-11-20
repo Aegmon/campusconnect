@@ -64,7 +64,7 @@ include("sidebar.php");
 										<h4 class="my-1"><?php echo $online_count; ?></h4>
 									
 									</div>
-								<div class="widgets-icons bg-light-danger text-danger ms-auto"><i class='bx bxs-group'></i>
+								  <div class="widgets-icons bg-light-danger text-danger ms-auto"><i class='bx bxs-group'></i>
 									</div>
 								</div>
 							</div>
@@ -151,16 +151,50 @@ if ($result->num_rows > 0) {
 					    <div class="col-8">
 						<div class="card">
 							<div class="card-body">
+								
 								<div id="chart23"></div>
 							</div>
 						</div>
 						  </div>
-						    <div class="col-4">
-							<div class="card">
-							<div class="card-body">
-								<div id="chart9"></div>
-							</div>
-						</div>
+						<div class="col-4">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h5 class="mb-1">Number of Likes, Posts, and Comments</h5>
+                </div>
+                <div class="ms-lg-auto mb-2 mb-lg-0">
+                    <div class="btn-group-round">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-white" onclick="updateTimeRange('day')">Day</button>
+                            <button type="button" class="btn btn-white" onclick="updateTimeRange('week')">Week</button>
+                            <button type="button" class="btn btn-white" onclick="updateTimeRange('month')">Month</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="chart9"></div>
+    </div>
+</div>
+
+<script>
+function updateTimeRange(timeRange) {
+    // Assuming you want to reload the same page with the selected time range as a query parameter
+    window.location.href = window.location.pathname + '?time_range=' + timeRange;
+}
+
+// Use window.onload to ensure the content is fully loaded before scrolling
+window.onload = function() {
+    // Get the chart9 element
+    var chartElement = document.getElementById('chart9');
+    
+    // Scroll to the chart9 element
+    if (chartElement) {
+        chartElement.scrollIntoView({ behavior: 'smooth' });
+    }
+};
+</script>
 						  </div>
 					  </div>
 					    	  <div class="row">
@@ -170,6 +204,11 @@ if ($result->num_rows > 0) {
 													Recent Consultations</div>
 											
 				<div class="card-body">
+					<div class="btn-group">
+    <button type="button" class="btn btn-secondary" onclick="filterTable('day')">Day</button>
+    <button type="button" class="btn btn-secondary" onclick="filterTable('week')">Week</button>
+    <button type="button" class="btn btn-secondary" onclick="filterTable('month')">Month</button>
+</div>
 						<div class="table-responsive">
 
 <?php
@@ -193,7 +232,7 @@ if ($result && $result->num_rows > 0) {
 					<th>Status</th>
                 </tr>
             </thead>
-            <tbody>';
+            <tbody id="table-body">';
 while ($row = $result->fetch_assoc()) {
     $formattedDate = date("F j, Y", strtotime($row['date']));
     $formattedStartTime = date("h:i A", strtotime($row['starttime']));
@@ -278,6 +317,23 @@ while ($row = $result->fetch_assoc()) {
 		<script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
 	<script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
 	<script>
+function filterTable(timeRange) {
+    // Use AJAX to fetch filtered data from the server based on the selected time range
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            // Replace the table content with the filtered data
+            document.getElementById("table-body").innerHTML = this.responseText;
+        }
+    };
+    xhttp.open("GET", "filter_data.php?time_range=" + timeRange, true);
+    xhttp.send();
+}
+</script>
+	<script>
+
+
+
 		$(document).ready(function() {
 			$('#example').DataTable();
 		  } );
@@ -427,10 +483,14 @@ chart.render();
 
 });
 
+
 <?php
-function getChartData($con, $table)
+function getChartData($con, $table, $type)
 {
-    $query = "SELECT COUNT(*) as count, datecreated FROM $table GROUP BY datecreated";
+    $countField = ($type === 'post') ? 'likes' : 'COUNT(*)';
+    $dateField = ($type === 'post') ? 'post_date' : 'reply_date';
+
+    $query = "SELECT $countField as count, $dateField as datecreated FROM $table GROUP BY $dateField";
     $result = $con->query($query);
 
     $data = [];
@@ -444,23 +504,21 @@ function getChartData($con, $table)
     return $data;
 }
 
-$studentData = getChartData($con, 'student');
+// Get data for posts and likes
+$postData = getChartData($con, 'posts', 'post');
+$replyData = getChartData($con, 'post_replies', 'reply');
 
-// Get data for the 'faculty_info' table
-$facultyData = getChartData($con, 'faculty_info');
-
-
-$studentCounts = [];
-$facultyCounts = [];
+$postCounts = [];
+$replyCounts = [];
 $labels = [];
 
-foreach ($studentData as $data) {
+foreach ($postData as $data) {
     $labels[] = $data['datecreated'];
-    $studentCounts[] = $data['count'];
+    $postCounts[] = $data['count'];
 }
 
-foreach ($facultyData as $data) {
-    $facultyCounts[] = $data['count'];
+foreach ($replyData as $data) {
+    $replyCounts[] = $data['count'];
 }
 
 // Create options for the chart
@@ -484,19 +542,19 @@ $optionsLine = [
         'curve' => 'smooth',
         'width' => 5
     ],
-    'colors' => ["#8833ff", '#29cc39'],
+    'colors' => ["#8833ff", '#29cc39', '#ff9933'], // Add color for replyCounts
     'series' => [
         [
-            'name' => "Student",
-            'data' => $studentCounts
+            'name' => "Post Likes",
+            'data' => $postCounts
         ],
         [
-            'name' => "Faculty",
-            'data' => $facultyCounts
-        ]
+            'name' => "Reply Likes",
+            'data' => $replyCounts
+        ],
     ],
     'title' => [
-        'text' => 'Multiline Chart',
+        'text' => 'Likes Chart',
         'align' => 'left',
         'offsetY' => 25,
         'offsetX' => 20
@@ -534,6 +592,56 @@ $optionsLine = [
 
 // Convert options to JSON
 $optionsLineJSON = json_encode($optionsLine, JSON_NUMERIC_CHECK);
+
+?>
+<?php
+
+// Assuming the selected time range is passed as a parameter (e.g., $_GET['time_range'])
+// You may need to adjust this based on your actual implementation
+
+$timeRange = isset($_GET['time_range']) ? $_GET['time_range'] : 'all';
+
+// Function to get the appropriate date column for each type (post, reply, like)
+function getDateColumn($type) {
+    switch ($type) {
+        case 'post':
+            return 'post_date';
+        case 'reply':
+            return 'reply_date';
+        case 'like':
+            return 'post_date'; // Adjust this if likes have a different date column
+        default:
+            return '';
+    }
+}
+
+// Function to get the appropriate date range condition based on the selected time range
+function getDateRangeCondition($type, $timeRange) {
+    $dateColumn = getDateColumn($type);
+    switch ($timeRange) {
+        case 'day':
+            return " AND DATE($dateColumn) = CURDATE()";
+        case 'week':
+            return " AND YEARWEEK($dateColumn, 1) = YEARWEEK(NOW(), 1)";
+        case 'month':
+            return " AND MONTH($dateColumn) = MONTH(NOW()) AND YEAR($dateColumn) = YEAR(NOW())";
+        default:
+            return "";
+    }
+}
+
+// Modify your queries to include the date range condition
+$query_total_post_replies = "SELECT COUNT(*) as total_post_replies FROM post_replies WHERE 1" . getDateRangeCondition('reply', $timeRange);
+$ses_sql_total_post_replies = mysqli_query($con, $query_total_post_replies);
+$total_post_replies = mysqli_fetch_assoc($ses_sql_total_post_replies)['total_post_replies'];
+
+$query_total_likes = "SELECT SUM(likes) as total_likes FROM posts WHERE 1" . getDateRangeCondition('like', $timeRange);
+$ses_sql_total_likes = mysqli_query($con, $query_total_likes);
+$total_likes = mysqli_fetch_assoc($ses_sql_total_likes)['total_likes'];
+
+$query_total_posts = "SELECT COUNT(*) as total_posts FROM posts WHERE 1" . getDateRangeCondition('post', $timeRange);
+$ses_sql_total_posts = mysqli_query($con, $query_total_posts);
+$total_posts = mysqli_fetch_assoc($ses_sql_total_posts)['total_posts'];
 
 ?>
 

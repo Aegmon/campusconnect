@@ -284,7 +284,7 @@ echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post
 
 $query = "SELECT * FROM ins_consult ic 
 JOIN consultation c ON c.ins_c_id = ic.ins_c_id
-JOIN student s ON c.stud_id = s.stud_id WHERE ic.faculty_id = '$faculty_id'";
+JOIN student s ON c.stud_id = s.stud_id WHERE ic.faculty_id = '$faculty_id' order by ic.date  desc";
 
 $result = $con->query($query);
 

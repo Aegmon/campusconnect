@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['search'])) {
 
     // Perform the search and update the query
     $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name, s.fname as student_fname, s.lname as student_lname, g.fname as counselor_fname, g.lname as counselor_lname,
-              MAX(m.timestamp) as last_message_timestamp
+              MAX(m.timestamp) as last_message_timestamp,m.isRead
               FROM userdata u
               LEFT JOIN faculty_info f ON u.userID = f.userID
               LEFT JOIN student s ON u.userID = s.user_id
@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['search'])) {
 } else {
     // If no search term is provided, use the default query
     $query = "SELECT u.userID, u.email, u.lastlogin, u.usertype, f.first_name, f.last_name, s.fname as student_fname, s.lname as student_lname, g.fname as counselor_fname, g.lname as counselor_lname,
-              MAX(m.timestamp) as last_message_timestamp
+              MAX(m.timestamp) as last_message_timestamp,m.isRead
               FROM userdata u
               LEFT JOIN faculty_info f ON u.userID = f.userID
               LEFT JOIN student s ON u.userID = s.user_id
@@ -90,21 +90,62 @@ if ($resultRecentChat->num_rows > 0) {
     $activeUserId = ($recentChatData['sender_id'] == $currentUserId) ? $recentChatData['receiver_id'] : $recentChatData['sender_id'];
 }
 
+// ... (Previous code remains unchanged)
+
 // Check if the query returns any rows
 if ($result->num_rows > 0) {
     // Loop through each row
     while ($row = $result->fetch_assoc()) {
         echo '<div class="list-group list-group-flush">';
+        
         // Check if the current user is the one displayed in the chat content
-        if ($row['userID'] == $activeUserId) {
-            echo '<a href="javascript:;" class="list-group-item " onclick="setReceiverId(' . $row['userID'] . ')">'; // Pass the userID as the receiverId
-        } else {
-            echo '<a href="javascript:;" class="list-group-item" onclick="setReceiverId(' . $row['userID'] . ')">'; // Pass the userID as the receiverId
-        }
+        $isActiveUser = ($row['userID'] == $activeUserId);
+
+        // Your code to get the count of unread messages for the current user
+$queryUnreadCount = "SELECT SUM(unreadCount) AS totalUnreadCount
+                    FROM (
+                        SELECT COUNT(*) AS unreadCount 
+                        FROM messages 
+                        WHERE (receiver_id = {$row['userID']} AND isRead = 0)
+                        
+                        UNION ALL
+                        
+                        SELECT COUNT(*) AS unreadCount 
+                        FROM messages 
+                        WHERE (sender_id = {$row['userID']} AND isRead = 0)
+                    ) AS subquery";
+
+
+   $resultUnreadCount = $con->query($queryUnreadCount);
+
+// Check if the query execution was successful
+if ($resultUnreadCount === false) {
+    echo "Error in query: " . $con->error;
+} else {
+    // Continue fetching and processing the result
+    $unreadCountData = $resultUnreadCount->fetch_assoc();
+
+    if ($unreadCountData !== null) {
+        $totalUnreadCount = $unreadCountData['totalUnreadCount'];
+        $hasUnreadMessages = ($totalUnreadCount > 0);
+    } else {
+        // Handle the case when there are no results
+        $totalUnreadCount = 0;
+        $hasUnreadMessages = false;
+    }
+}
+
+
+
+        // Add a CSS class based on whether there are unread messages
+        $cssClass = $isActiveUser ? 'list-group-item ' : 'list-group-item';
+        $cssClass .= $hasUnreadMessages ? ' ' : ' has-unread-messages';
+
+        echo '<a href="javascript:;" class="' . $cssClass . '" onclick="setReceiverId(' . $row['userID'] . ')">'; // Pass the userID as the receiverId
         echo '<div class="d-flex">';
-        echo '<div class="chat-user-online">';
+
         echo '<img src="assets/images/avatars/admin.png" width="42" height="42" class="rounded-circle" alt="" />';
-        echo '</div>';
+    
         echo '<div class="flex-grow-1 ms-2">';
         if ($row['usertype'] == 'faculty') {
             echo '<h6 class="mb-0 chat-title">' . $row['first_name'] . ' ' . $row['last_name'] . '</h6>';
@@ -113,9 +154,9 @@ if ($result->num_rows > 0) {
         } elseif ($row['usertype'] == 'guidance') {
             echo '<h6 class="mb-0 chat-title">' . $row['counselor_fname'] . ' ' . $row['counselor_lname'] . ' (Counselor)</h6>';
         }
-        echo '<p class="mb-0 chat-msg">message</p>'; // Replace 'message' with the actual message
+    echo '<p class="mb-0 chat-msg">' . ($hasUnreadMessages ? 'No new messages' : 'Unread messages') . '</p>';
         echo '</div>';
-        echo '<div class="chat-time">' . $row['lastlogin'] . '</div>'; // Assuming lastlogin is the field for the timestamp
+        echo '<div class="chat-time">' . $row['lastlogin'] . '</div>';
         echo '</div>';
         echo '</a>';
         echo '</div>';
@@ -124,6 +165,7 @@ if ($result->num_rows > 0) {
     echo "No results found";
 }
 ?>
+
 </div>
 
 								</div>

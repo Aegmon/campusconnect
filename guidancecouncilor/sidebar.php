@@ -67,7 +67,13 @@ include('session.php');
 						<div class="menu-title">Students</div>
 					</a>
 				</li>
-           
+           	<li>
+					<a href="insights.php">
+						<div class="parent-icon"><i class='bx bx-bar-chart-alt-2' ></i>
+						</div>
+						<div class="menu-title">Insights</div>
+					</a>
+				</li>
 		
 				 	<!-- <li>
 					<a href="faculty.php">

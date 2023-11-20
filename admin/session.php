@@ -55,19 +55,6 @@ $ses_sql_total_students = mysqli_query($con, $query_total_students);
 $total_students = mysqli_fetch_assoc($ses_sql_total_students)['total_students'];
 
 
-$query_total_post_replies = "SELECT COUNT(*) as total_post_replies FROM post_replies";
-$ses_sql_total_post_replies = mysqli_query($con, $query_total_post_replies);
-$total_post_replies = mysqli_fetch_assoc($ses_sql_total_post_replies)['total_post_replies'];
-
-
-$query_total_likes = "SELECT SUM(likes) as total_likes FROM posts";
-$ses_sql_total_likes = mysqli_query($con, $query_total_likes);
-$total_likes = mysqli_fetch_assoc($ses_sql_total_likes)['total_likes'];
-
-
-$query_total_posts = "SELECT COUNT(*) as total_posts FROM posts";
-$ses_sql_total_posts = mysqli_query($con, $query_total_posts);
-$total_posts = mysqli_fetch_assoc($ses_sql_total_posts)['total_posts'];
 
 
 

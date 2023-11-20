@@ -185,7 +185,12 @@ ORDER BY p.post_date DESC;;
                 if ($postFrom === 'user') {
                     echo '<div style="display: flex; align-items: center; margin-bottom: 10px;">
                             <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                                <div>
                             <h6 class="text-dark m-0">'.  $row["name"] .':</h6>
+                      
+                             
+                                <small class="text-muted">Posted on: ' . time_ago($postDate) . '</small>
+                            </div>
                         </div>';
                 }
                 echo '<h5 class="card-title">' . $postTitle . '</h5>';
@@ -195,7 +200,7 @@ ORDER BY p.post_date DESC;;
     echo '<a href="' . $row["file_path"] . '" class="btn btn-primary btn-sm" download><i class="bx bx-download"></i>  (' . $fileName . ')</a>';
 }
                 echo '<div class="card-footer text-muted" style="display: flex; justify-content: space-between; align-items: center;">
-                        <small>' . time_ago($postDate) . '</small>
+                    
                         <button type="button" class="btn btn-primary btn-sm" onclick="toggleReply(this)">Reply</button>
                     </div>';
                 echo '<div class="mt-3 p-2"  style="display: none;" id="replyField">
@@ -252,7 +257,7 @@ echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post
 $query = "SELECT * FROM ins_consult ic 
 JOIN consultation c ON c.ins_c_id = ic.ins_c_id
 JOIN student s ON c.stud_id = s.stud_id 
-JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id WHERE s.stud_id = '$student_id' AND c.status='completed'";
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id WHERE s.stud_id = '$student_id' AND c.status='completed' order by ic.date  desc";
 
 $result = $con->query($query);
 
@@ -337,7 +342,7 @@ echo $formattedStartTime . ' - ' . $formattedEndTime;
 <?php
 
 $query = "SELECT * FROM ins_consult ic 
-JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id";
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id order by ic.date  desc";
 
 $result = $con->query($query);
 
