@@ -126,43 +126,54 @@ if ($result && $result->num_rows > 0) {
             <thead>
                 <tr>
                     <th>Post From</th>
-            
-                      <th>Title</th>
-                        <th>Content</th>
-                          <th>Date</th>
-                          <th>Status</th>
-                          <th>Tools</th>
+                    <th>Title</th>
+                    <th>Content</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Tools</th>
                 </tr>
             </thead>
             <tbody>';
     while ($row = $result->fetch_assoc()) {
         echo '<tr>
-              
                 <td>' . $row['name'] . '</td>
-                 <td>' . $row['post_title'] . '</td>
-                   <td>' . $row['post_content'] . '</td>
-                     <td>' . $row['post_date'] . '</td>';
-                        if ($row['isapproved'] == 0) {
+                <td>' . $row['post_title'] . '</td>
+                <td>' . $row['post_content'] . '</td>
+                <td>' . $row['post_date'] . '</td>';
+
+        if ($row['isapproved'] == 0) {
             echo '<td>Unverified</td>';
         } else if ($row['isapproved'] == 1) {
             echo '<td>Verified</td>';
         } else {
             echo '<td>Unknown</td>';
         }
-         echo '<td>
-		<form action="" method="post">
-		<input type="hidden" name="post_id"value="' . $row['post_id'] . '">
-		<button type="submit"  name="verify" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
-                <i class="bx bx-plus"></i> Accept
-              </button></td></form>
-              </tr>';
+
+        echo '<td>';
+
+        if ($row['isapproved'] != 1) {
+            // Button is enabled if the status is not verified
+            echo '<form action="" method="post">
+                    <input type="hidden" name="post_id" value="' . $row['post_id'] . '">
+                    <button type="submit" name="verify" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleVerticallycenteredModal">
+                        <i class="bx bx-plus"></i> Accept
+                    </button>
+                </form>';
+        } else {
+            // Button is disabled if the status is already verified
+            echo '<button class="btn btn-primary" disabled>
+                        <i class="bx bx-plus"></i> Accept
+                    </button>';
+        }
+
+        echo '</td></tr>';
     }
-    echo '</tbody>
-          </table>';
+    echo '</tbody></table>';
 } else {
     echo "No data found.";
 }
 ?>
+
 
 
 

@@ -36,65 +36,58 @@ include("sidebar.php");
 
 				<hr/>
 			
-					<div class="row">
-	               <div class="col-4">
-	             <div class="card">
-					<div class="card-body">
+                 <div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart"></div>
+            </div>
+        </div>
+    </div>
 
-	<div id="chart"></div>
-                   </div>
-                    </div>
-                    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart1"></div>
+            </div>
+        </div>
+    </div>
 
-                      <div class="col-4">
-	             <div class="card">
-					<div class="card-body">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart2"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-	<div id="chart1"></div>
-                   </div>
-                    </div>
-                    </div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart3"></div>
+            </div>
+        </div>
+    </div>
 
-                      <div class="col-4">
-	             <div class="card">
-					<div class="card-body">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart4"></div>
+            </div>
+        </div>
+    </div>
 
-	<div id="chart2"></div>
-                   </div>
-                    </div>
-                    </div>
-					</div>
-                    	<div class="row">
-	               <div class="col-4">
-	             <div class="card">
-					<div class="card-body">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart5"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-	<div id="chart3"></div>
-                   </div>
-                    </div>
-                    </div>
-
-                      <div class="col-4">
-	             <div class="card">
-					<div class="card-body">
-
-	<div id="chart4"></div>
-
-                   </div>
-                    </div>
-                    </div>
-
-                      <div class="col-4">
-	             <div class="card">
-					<div class="card-body">
-
-
-	<div id="chart5"></div>
-                   </div>
-                    </div>
-                    </div>
-					</div>
 				</div>
 		
 		<!--end page wrapper -->
@@ -219,313 +212,193 @@ include("sidebar.php");
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
 
-    <script>var options = {
-		series: [{
-			name: 'Likes',
-			data: [23]
-		}, {
-			name: 'Comments',
-			data: [34]
-		}, {
-			name: 'Post',
-			data: [35]
-		}],
-		chart: {
-			foreColor: '#9ba7b2',
-			type: 'bar',
-			height: 360
-		},
-		plotOptions: {
-			bar: {
-				horizontal: false,
-				columnWidth: '55%',
-				endingShape: 'rounded'
-			},
-		},
-		dataLabels: {
-			enabled: false
-		},
-		stroke: {
-			show: true,
-			width: 2,
-			colors: ['transparent']
-		},
-		title: {
-			text: 'Daily Engagements',
-			align: 'left',
-			style: {
-				fontSize: '14px'
-			}
-		},
-		colors: ["#29cc39", '#8833ff', '#e62e2e'],
-		xaxis: {
-			categories: ['Day 1'],
-		},
-	
-		fill: {
-			opacity: 1
-		},
-	
-	};
-	var chart = new ApexCharts(document.querySelector("#chart"), options);
-	chart.render();
+     <script>   
 
-    var options = {
-		series: [{
-			name: 'Likes',
-			data: [44, 55, 57, 56]
-		}, {
-			name: 'Comments',
-			data: [76, 85, 101, 98]
-		}, {
-			name: 'Post',
-			data: [35, 41, 36, 26]
-		}],
-		chart: {
-			foreColor: '#9ba7b2',
-			type: 'bar',
-			height: 360
-		},
-		plotOptions: {
-			bar: {
-				horizontal: false,
-				columnWidth: '55%',
-				endingShape: 'rounded'
-			},
-		},
-		dataLabels: {
-			enabled: false
-		},
-		stroke: {
-			show: true,
-			width: 2,
-			colors: ['transparent']
-		},
-		title: {
-			text: 'Weekly Engagements',
-			align: 'left',
-			style: {
-				fontSize: '14px'
-			}
-		},
-		colors: ["#29cc39", '#8833ff', '#e62e2e'],
-		xaxis: {
-			categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-		},
-	
-		fill: {
-			opacity: 1
-		},
-	
-	};
-	var chart = new ApexCharts(document.querySelector("#chart1"), options);
-	chart.render();
 
-    var options = {
-		series: [{
-			name: 'Likes',
-			data: [44, 55, 57, 56, 61, 58, 63, 60, 66, 52, 53, 41]
-		}, {
-			name: 'Comments',
-			data: [76, 85, 101, 98, 87, 105, 91, 114, 94, 52, 53, 41]
-		}, {
-			name: 'Post',
-			data: [35, 41, 36, 26, 45, 48, 52, 53, 41, 52, 53, 41]
-		}],
-		chart: {
-			foreColor: '#9ba7b2',
-			type: 'bar',
-			height: 360
-		},
-		plotOptions: {
-			bar: {
-				horizontal: false,
-				columnWidth: '55%',
-				endingShape: 'rounded'
-			},
-		},
-		dataLabels: {
-			enabled: false
-		},
-		stroke: {
-			show: true,
-			width: 2,
-			colors: ['transparent']
-		},
-		title: {
-			text: 'Monthly Engagements',
-			align: 'left',
-			style: {
-				fontSize: '14px'
-			}
-		},
-		colors: ["#29cc39", '#8833ff', '#e62e2e'],
-		xaxis: {
-			categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-		},
-	
-		fill: {
-			opacity: 1
-		},
-	
-	};
-	var chart = new ApexCharts(document.querySelector("#chart2"), options);
-	chart.render();
+// Fetch and organize the data from your server (replace with your actual PHP script path)
+fetch('getdata.php')
+  .then(response => response.json())
+  .then(data => {
+    // Extract data for today
+    const todayLikes = data.today_likes;
+    const todayPosts = data.today_posts;
+    const todayReplies = data.today_replies;
+
+    // Extract data for this week
+    const weekLikes = data.week_likes;
+    const weekPosts = data.week_posts;
+    const weekReplies = data.week_replies;
+
+    // Extract data for this month
+    const monthLikes = data.month_likes;
+    const monthPosts = data.month_posts;
+    const monthReplies = data.month_replies;
+
+    // Update the chart options with the fetched data
+    updateChartOptions(todayLikes, todayPosts, todayReplies, '#chart', 'Day');
+    updateChartOptions(weekLikes, weekPosts, weekReplies, '#chart1', 'Week');
+    updateChartOptions(monthLikes, monthPosts, monthReplies, '#chart2', 'Month');
+  })
+  .catch(error => console.error('Error fetching data:', error));
+
+
+
+
+// Function to update monthly chart options dynamically
+function updateChartOptions(likes, posts, replies, chartId, timeUnit) {
+  var options = {
+    series: [
+      {
+        name: 'Likes',
+        data: [Math.round(likes)], // Round the value to the nearest whole number
+      },
+      {
+        name: 'Comments',
+        data: [Math.round(replies)], // Round the value to the nearest whole number
+      },
+      {
+        name: 'Post',
+        data: [Math.round(posts)], // Round the value to the nearest whole number
+      },
+    ],
+    chart: {
+      foreColor: '#9ba7b2',
+      type: 'bar',
+      height: 360,
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '55%',
+        endingShape: 'rounded',
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent'],
+    },
+    title: {
+      text: `Daily Engagements - ${timeUnit}`,
+      align: 'left',
+      style: {
+        fontSize: '14px',
+      },
+    },
+    colors: ["#29cc39", '#8833ff', '#e62e2e'],
+    xaxis: {
+      categories: [timeUnit],
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return Math.round(value); // Format y-axis labels as whole numbers
+        }
+      }
+    },
+    fill: {
+      opacity: 1,
+    },
+  };
+
+  var chart = new ApexCharts(document.querySelector(chartId), options);
+  chart.render();
+}
+
 
     ////// Consultation
 
-    var options = {
-		series: [{
-			name: 'Completed',
-			data: [5]
-		}, {
-			name: 'Pending',
-			data: [1]
-		}, {
-			name: 'Rejected',
-			data: [4]
-		}],
-		chart: {
-			foreColor: '#9ba7b2',
-			type: 'bar',
-			height: 360
-		},
-		plotOptions: {
-			bar: {
-				horizontal: false,
-				columnWidth: '55%',
-				endingShape: 'rounded'
-			},
-		},
-		dataLabels: {
-			enabled: false
-		},
-		stroke: {
-			show: true,
-			width: 2,
-			colors: ['transparent']
-		},
-		title: {
-			text: 'Daily Consultation',
-			align: 'left',
-			style: {
-				fontSize: '14px'
-			}
-		},
-		colors: ["#29cc39", '#8833ff', '#e62e2e'],
-		xaxis: {
-			categories: ['Day 1'],
-		},
-	
-		fill: {
-			opacity: 1
-		},
-	
-	};
-	var chart = new ApexCharts(document.querySelector("#chart3"), options);
-	chart.render();
+   fetch('consultationdata.php')
+  .then(response => response.json())
+  .then(data => {
+    // Extract data for today
+    const todayCompleted = data.today_consultation_status.today_completed;
+    const todayPending = data.today_consultation_status.today_pending;
+    const todayRejected = data.today_consultation_status.today_rejected;
 
-    var options = {
-		series: [{
-			name: 'Completed',
-			data: [4, 2, 4, 2]
-		}, {
-			name: 'Pending',
-			data: [2, 1, 4, 5]
-		}, {
-			name: 'Rejected',
-			data: [2, 0, 1, 4]
-		}],
-		chart: {
-			foreColor: '#9ba7b2',
-			type: 'bar',
-			height: 360
-		},
-		plotOptions: {
-			bar: {
-				horizontal: false,
-				columnWidth: '55%',
-				endingShape: 'rounded'
-			},
-		},
-		dataLabels: {
-			enabled: false
-		},
-		stroke: {
-			show: true,
-			width: 2,
-			colors: ['transparent']
-		},
-		title: {
-			text: 'Weekly Consultation',
-			align: 'left',
-			style: {
-				fontSize: '14px'
-			}
-		},
-		colors: ["#29cc39", '#8833ff', '#e62e2e'],
-		xaxis: {
-			categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-		},
-	
-		fill: {
-			opacity: 1
-		},
-	
-	};
-	var chart = new ApexCharts(document.querySelector("#chart4"), options);
-	chart.render();
+    // Extract data for this week
+    const weekCompleted = data.week_consultation_status.week_completed;
+    const weekPending = data.week_consultation_status.week_pending;
+    const weekRejected = data.week_consultation_status.week_rejected;
 
-    var options = {
-		series: [{
-			name: 'Completed',
-			data: [4, 4, 5, 6, 6, 10, 23, 4, 2, 1, 5, 5]
-		}, {
-			name: 'Pending',
-			data: [1, 2, 4, 5, 8, 7, 6, 6, 3, 5, 11, 14]
-		}, {
-			name: 'Rejected',
-			data: [2, 2, 1, , 1, 2, 5, 4, 8, 9, 2, 5]
-		}],
-		chart: {
-			foreColor: '#9ba7b2',
-			type: 'bar',
-			height: 360
-		},
-		plotOptions: {
-			bar: {
-				horizontal: false,
-				columnWidth: '55%',
-				endingShape: 'rounded'
-			},
-		},
-		dataLabels: {
-			enabled: false
-		},
-		stroke: {
-			show: true,
-			width: 2,
-			colors: ['transparent']
-		},
-		title: {
-			text: 'Monthly Consultation',
-			align: 'left',
-			style: {
-				fontSize: '14px'
-			}
-		},
-		colors: ["#29cc39", '#8833ff', '#e62e2e'],
-		xaxis: {
-			categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-		},
-	
-		fill: {
-			opacity: 1
-		},
-	
-	};
-	var chart = new ApexCharts(document.querySelector("#chart5"), options);
-	chart.render();
+    // Extract data for this month
+    const monthCompleted = data.month_consultation_status.month_completed;
+    const monthPending = data.month_consultation_status.month_pending;
+    const monthRejected = data.month_consultation_status.month_rejected;
+
+    // Update the chart options with the fetched data
+    updateConsultationStatusChart(todayCompleted, todayPending, todayRejected, '#chart3', 'Daily');
+    updateConsultationStatusChart(weekCompleted, weekPending, weekRejected, '#chart4', 'Weekly');
+    updateConsultationStatusChart(monthCompleted, monthPending, monthRejected, '#chart5', 'Monthly');
+  })
+  .catch(error => console.error('Error fetching data:', error));
+
+// Function to update consultation status chart options dynamically
+function updateConsultationStatusChart(completed, pending, rejected, chartId, timeUnit) {
+  var options = {
+    series: [
+      {
+        name: 'Completed',
+        data: [Math.round(completed)],
+      },
+      {
+        name: 'Pending',
+        data: [Math.round(pending)],
+      },
+      {
+        name: 'Rejected',
+        data: [Math.round(rejected)],
+      },
+    ],
+    chart: {
+      foreColor: '#9ba7b2',
+      type: 'bar',
+      height: 360,
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '55%',
+        endingShape: 'rounded',
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent'],
+    },
+    title: {
+      text: `Consultation Status - ${timeUnit}`,
+      align: 'left',
+      style: {
+        fontSize: '14px',
+      },
+    },
+    colors: ["#29cc39", '#8833ff', '#e62e2e'],
+    xaxis: {
+      categories: [timeUnit],
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return Math.round(value); // Format y-axis labels as whole numbers
+        }
+      }
+    },
+    fill: {
+      opacity: 1,
+    },
+  };
+
+  var chart = new ApexCharts(document.querySelector(chartId), options);
+  chart.render();
+}
     </script>
 </body>
 

@@ -161,35 +161,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['post'])) {
         </div>
     </div>
         <?php
-        function time_ago($datetime, $full = false) {
-    $now = new DateTime;
-    $ago = new DateTime($datetime);
-    $diff = $now->diff($ago);
+        function time_ago($datetime, $full = false)
+        {
+            $now = new DateTime;
+            $ago = new DateTime($datetime);
+            $diff = $now->diff($ago);
 
-    $diff->w = floor($diff->d / 7);
-    $diff->d -= $diff->w * 7;
+            $diff->w = floor($diff->d / 7);
+            $diff->d -= $diff->w * 7;
 
-    $string = array(
-        'y' => 'year',
-        'm' => 'month',
-        'w' => 'week',
-        'd' => 'day',
-        'h' => 'hour',
-        'i' => 'minute',
-        's' => 'second',
-    );
+            $string = array(
+                'y' => 'year',
+                'm' => 'month',
+                'w' => 'week',
+                'd' => 'day',
+                'h' => 'hour',
+                'i' => 'minute',
+                's' => 'second',
+            );
 
-    foreach ($string as $k => &$v) {
-        if ($diff->$k) {
-            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-        } else {
-            unset($string[$k]);
+            foreach ($string as $k => &$v) {
+                if ($diff->$k) {
+                    $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+                } else {
+                    unset($string[$k]);
+                }
+            }
+
+            if (!$full) $string = array_slice($string, 0, 1);
+            return $string ? implode(', ', $string) . ' ago' : 'just now';
         }
-    }
-
-    if (!$full) $string = array_slice($string, 0, 1);
-    return $string ? implode(', ', $string) . ' ago' : 'just now';
-}
 
         $result = $con->query("SELECT p.*, 
     CASE 
@@ -205,66 +206,71 @@ FROM posts p
 LEFT JOIN faculty_info f ON p.user_id = f.userID 
 LEFT JOIN student s ON p.user_id = s.user_id 
 WHERE p.isapproved = '1'
-ORDER BY p.post_date DESC;;
-");
+ORDER BY p.post_date DESC;;");
+
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $postTitle = $row["post_title"];
                 $postContent = $row["post_content"];
                 $postDate = $row["post_date"];
                 $post_id = $row["post_id"];
-                $postFrom = $row["post_from"]; 
- $likes = $row["likes"]; // new
+                $postFrom = $row["post_from"];
+                $likes = $row["likes"]; // new
+
                 echo '<div class="card mb-3">';
                 echo '<div class="card-body">';
                 // Display the post with a header for the post source
-                if ($postFrom === 'user') {
-                    echo '<div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                            <h6 class="text-dark m-0">'.  $row["name"] .':</h6>
-                        </div>';
-                }
+                echo '<div class="d-flex align-items-center mb-3">
+                        <img src="assets/images/avatars/admin.png" class="user-img rounded-circle" alt="user avatar" style="width: 40px; height: 40px;">
+                        <div class="ml-3">
+                            <h6 class="mb-0">' . $row["name"] . ':</h6>
+                            <small class="text-muted">Posted ' . time_ago($postDate) . '</small>
+                        </div>
+                    </div>';
+
                 echo '<h5 class="card-title">' . $postTitle . '</h5>';
                 echo '<p class="card-text">' . $postContent . '</p>';
                 if (!empty($row["file_path"])) {
-    $fileName = basename($row["file_path"]);
-    echo '<a href="' . $row["file_path"] . '" class="btn btn-primary btn-sm" download><i class="bx bx-download"></i>  (' . $fileName . ')</a>';
-}
-                echo '<div class="card-footer text-muted" style="display: flex; justify-content: space-between; align-items: center;">
-                        <small>' . time_ago($postDate) . '</small>
+                    $fileName = basename($row["file_path"]);
+                    echo '<a href="' . $row["file_path"] . '" class="btn btn-primary btn-sm" download><i class="bx bx-download"></i>  (' . $fileName . ')</a>';
+                }
+
+                echo '<div class="d-flex justify-content-between align-items-center mt-3">
                         <button type="button" class="btn btn-primary btn-sm" onclick="toggleReply(this)">Reply</button>
+                        <button type="button" class="btn btn-primary btn-sm like-button" data-post-id="' . $post_id . '" onclick="likePost(' . $post_id . ')">
+                            <i class="fadeIn animated bx bx-like"></i> Like (' . $likes . ')
+                        </button>
                     </div>';
-                echo '<div class="mt-3 p-2"  style="display: none;" id="replyField">
+
+                echo '<div class="mt-3 p-2" style="display: none;" id="replyField">
                         <form method="post" action="">
                             <input type="text" class="form-control form-control-sm" id="replyInput" name="replyContent" placeholder="Type your reply here">
                             <input type="hidden" id="postID" name="postID" value="' . $post_id . '">
                             <button type="submit" name="reply" class="btn btn-primary btn-sm mt-2">Reply</button>
                         </form>
                     </div>';
-echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post-id="' . $post_id . '" onclick="likePost(' . $post_id . ')">
-        <i class="fadeIn animated bx bx-like"></i> Like (' . $likes . ')
-      </button>';
-                    $replyResult = $con->query("SELECT * FROM post_replies WHERE post_id = $post_id");
-        if ($replyResult->num_rows > 0) {
-            echo '<ul class="list-group list-group-flush"  margin-top: 20px;">';
-            while ($replyRow = $replyResult->fetch_assoc()) {
-                $replyContent = $replyRow["reply_content"];
-                $replyDate = $replyRow["reply_date"];
-                $replyFrom = $replyRow["reply_from"]; // Assuming 'admin' or 'user' is stored in the 'reply_from' field
 
-                echo '<li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div style="display: flex; align-items: center;">
-                            <img src="assets/images/avatars/admin.png" class="user-img" alt="user avatar" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                            <p class="mb-0">' . $replyContent . '</p>
-                        </div>
-                        <span class="badge bg-secondary rounded-pill">' . time_ago($replyDate) . '</span>
-                    </li>';
-            }
-            echo '</ul>';
-        } else {
-            echo '<div class="list-group mt-3" ></div>';
-        }
+                $replyResult = $con->query("SELECT * FROM post_replies WHERE post_id = $post_id");
 
+                if ($replyResult->num_rows > 0) {
+                    echo '<ul class="list-group list-group-flush mt-3">';
+                    while ($replyRow = $replyResult->fetch_assoc()) {
+                        $replyContent = $replyRow["reply_content"];
+                        $replyDate = $replyRow["reply_date"];
+                        $replyFrom = $replyRow["reply_from"]; // Assuming 'admin' or 'user' is stored in the 'reply_from' field
+
+                        echo '<li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <img src="assets/images/avatars/admin.png" class="user-img rounded-circle" alt="user avatar" style="width: 30px; height: 30px;">
+                                    <p class="mb-0">' . $replyContent . '</p>
+                                </div>
+                                <span class="badge bg-secondary rounded-pill">' . time_ago($replyDate) . '</span>
+                            </li>';
+                    }
+                    echo '</ul>';
+                } else {
+                    echo '<div class="list-group mt-3"></div>';
+                }
 
                 echo '</div>'; // close card-body
                 echo '</div>'; // close card
@@ -284,7 +290,9 @@ echo '<button type="button" class="btn btn-primary btn-sm like-button" data-post
 
 $query = "SELECT * FROM ins_consult ic 
 JOIN consultation c ON c.ins_c_id = ic.ins_c_id
-JOIN student s ON c.stud_id = s.stud_id WHERE ic.faculty_id = '$faculty_id' order by ic.date  desc";
+JOIN student s ON c.stud_id = s.stud_id 
+WHERE ic.faculty_id = '$faculty_id' 
+ORDER BY FIELD(c.status, 'pending', 'completed', 'rejected'), ic.date DESC";
 
 $result = $con->query($query);
 
@@ -404,23 +412,42 @@ if ($status == 'completed') {
 	<script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
 	<script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
 	<script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
-	<script>
-		$(document).ready(function() {
-			$('#example').DataTable();
-		  } );
-	</script>
-	<script>
-		$(document).ready(function() {
-			var table = $('#example2').DataTable( {
-				lengthChange: false,
-				buttons: [ 'copy', 'excel', 'pdf', 'print']
-			} );
-		 
-			table.buttons().container()
-				.appendTo( '#example2_wrapper .col-md-6:eq(0)' );
-		} );
-	</script>
-    <script>
+
+<script>
+function likePost(postID) {
+    const likeButton = document.querySelector('.like-button[data-post-id="' + postID + '"]');
+
+    // Check if the button is already disabled
+    if (likeButton.disabled) {
+        console.log('Button already disabled for post ID:', postID);
+        return;
+    }
+
+    console.log('Like button clicked for post ID:', postID);
+
+    fetch('like_post.php?post_id=' + postID, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);
+
+        // Update the likes count in the UI
+        likeButton.innerHTML = '<span class="glyphicon glyphicon-heart" aria-hidden="true"></span> Like (' + data.likes + ')';
+        
+        // Disable the button
+        likeButton.disabled = true;
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+</script>
+
+   <script>
     function toggleReply(button) {
         var replyField = button.parentNode.nextElementSibling;
         if (replyField.style.display === "none") {

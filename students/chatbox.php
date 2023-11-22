@@ -90,7 +90,7 @@ if ($resultRecentChat->num_rows > 0) {
     $activeUserId = ($recentChatData['sender_id'] == $currentUserId) ? $recentChatData['receiver_id'] : $recentChatData['sender_id'];
 }
 
-// ... (Previous code remains unchanged)
+
 
 // Check if the query returns any rows
 if ($result->num_rows > 0) {
@@ -127,6 +127,7 @@ if ($resultUnreadCount === false) {
 
     if ($unreadCountData !== null) {
         $totalUnreadCount = $unreadCountData['totalUnreadCount'];
+        
         $hasUnreadMessages = ($totalUnreadCount > 0);
     } else {
         // Handle the case when there are no results
