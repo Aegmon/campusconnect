@@ -159,19 +159,19 @@ if ($resultUnreadCount === false) {
 					</div>
 					<div class="chat-footer d-flex align-items-center">
     <div class="flex-grow-1 pe-2">
-
-    <div class="input-group">
-          <div class="input-group-append">
-            <label for="fileInput" class="btn btn-secondary">
-                <i class="bx bx-paperclip"></i> 
-            </label>
-            <input type="file" name="uploadedFile" id="fileInput" style="display:none;">
-        </div>
-        <input type="text" class="form-control" name="message" id="message-input" placeholder="Type a message">
-      
-        <input type="hidden" name="receiverId" id="receiverIdField" value="">
-        <button type="submit" id="send-message-btn" class="btn btn-primary">Send</button>
+<div class="input-group">
+    <div class="input-group-append">
+        <label for="fileInput" class="btn btn-secondary">
+            <i class="bx bx-paperclip"></i>
+        </label>
+        <input type="file" name="uploadedFile" id="fileInput" style="display:none;">
     </div>
+    <input type="text" class="form-control" name="message" id="message-input" placeholder="Type a message">
+
+    <input type="hidden" name="receiverId" id="receiverIdField" value="">
+    <button type="submit" id="send-message-btn" class="btn btn-primary">Send</button>
+
+</div>
 
 
 
@@ -211,35 +211,33 @@ if ($resultUnreadCount === false) {
 	<script src="assets/js/app.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-	    var receiverId = 0; // Initialize receiverId
+    var receiverId = 0; // Initialize receiverId
+    var attachmentName = ""; // Initialize attachmentName
 
     function setReceiverId(id) {
         receiverId = id; // Set the receiverId to the ID of the clicked user
         document.getElementById('receiverIdField').value = receiverId; // Set the value of the input field
 
         // Make an AJAX call to fetch and display messages
-        $.ajax({
-            type: 'POST',
-            url: 'fetch_messages.php', // Replace with the actual URL for fetching messages
-            data: { receiverId: receiverId },
-            success: function(response) {
-                console.log(response);
-                $(".chat-content").html(response); // Update the chat content with the fetched messages
-                 scrollToLastMessage();
-            }
-        });
+        fetchAndUpdateMessages(receiverId);
     }
 
-$('#send-message-btn').on('click', function() {
-    document.getElementById('receiverIdField').value = receiverId; // Set the value of the input field
-    const message = $('#message-input').val(); // Get the message from the input field
-    const fileInput = $('#fileInput')[0].files[0]; // Get the selected file
+    $('#fileInput').on('change', function () {
+        const fileInput = $('#fileInput')[0].files[0];
+        if (fileInput) {
+            attachmentName = fileInput.name;
+            $('#message-input').val(attachmentName);
+        }
+    });
 
-    // Check if the message is not empty
-    if (message.trim() !== '') {
+    $('#send-message-btn').on('click', function () {
+        document.getElementById('receiverIdField').value = receiverId; // Set the value of the input field
+        const message = $('#message-input').val(); // Get the message from the input field
+        const fileInput = $('#fileInput')[0].files[0]; // Get the selected file
+
         // Check if a file is selected
         if (fileInput) {
-          const allowedFileTypes = [
+            const allowedFileTypes = [
                 'application/pdf',
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -267,69 +265,70 @@ $('#send-message-btn').on('click', function() {
                 data: formData,
                 contentType: false,
                 processData: false,
-                success: function(response) {
-                          console.log(response);
+                success: function (response) {
+                    console.log(response);
                     $('#message-input').val('');
 
                     // Fetch and display updated messages
                     fetchAndUpdateMessages(receiverId);
+
+                    // Display attachment name
+                    $('#attachment-info').html('<small>Attachment: ' + fileInput.name + '</small>');
                 },
-                error: function(error) {
+                error: function (error) {
                     console.error('Error sending message:', error);
                 }
             });
-        } else {
-       
+        } else if (message.trim() !== '') {
+            // Send only message if it is not empty
             $.ajax({
                 type: 'POST',
                 url: 'insert_message.php', // Create a new PHP script for handling the message insertion
                 data: { receiverId: receiverId, message: message },
-                success: function(response) {
-                      console.log(response);
+                success: function (response) {
+                    console.log(response);
                     $('#message-input').val('');
 
                     // Fetch and display updated messages
                     fetchAndUpdateMessages(receiverId);
                 },
-                error: function(error) {
+                error: function (error) {
                     console.error('Error sending message:', error);
                 }
             });
-        }
-    } else {
-        // Handle the case when the message is empty
-        alert('Please enter a message.');
-    }
-});
-
-   // Function to fetch and update messages (reuse this function)
-function fetchAndUpdateMessages(receiverId) {
-    // AJAX request to fetch and display user messages
-    $.ajax({
-        type: 'POST',
-        url: 'fetch_messages.php', // Replace with the actual URL for fetching messages
-        data: { receiverId: receiverId },
-        success: function(response) {
-            console.log(response);
-            $(".chat-content").html(response); // Update the chat content with the fetched messages
-
-            // Scroll to the last message
-            scrollToLastMessage();
+        } else {
+            // Handle the case when both message and attachment are empty
+            alert('Please enter a message or select an attachment.');
         }
     });
-}
-function scrollToLastMessage() {
-    var chatContent = $(".chat-content");
-    var lastMessage = chatContent.children().last();
 
-    if (lastMessage.length > 0) {
-        chatContent.scrollTop(lastMessage.offset().top);
+    // Function to fetch and update messages (reuse this function)
+    function fetchAndUpdateMessages(receiverId) {
+        // AJAX request to fetch and display user messages
+        $.ajax({
+            type: 'POST',
+            url: 'fetch_messages.php', // Replace with the actual URL for fetching messages
+            data: { receiverId: receiverId },
+            success: function (response) {
+                console.log(response);
+                $(".chat-content").html(response); // Update the chat content with the fetched messages
+
+                // Scroll to the last message
+                scrollToLastMessage();
+            }
+        });
     }
-}
 
+    function scrollToLastMessage() {
+        var chatContent = $(".chat-content");
+        var lastMessage = chatContent.children().last();
 
+        if (lastMessage.length > 0) {
+            chatContent.scrollTop(lastMessage.offset().top);
+        }
+    }
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Default content for chat content
         var defaultUsername = "";
         var defaultMessage = "";
@@ -342,22 +341,16 @@ function scrollToLastMessage() {
         $(".chat-header h4").text("");
 
         // Handle the click event for the list items
-         $(".list-group-item").click(function() {
+        $(".list-group-item").click(function () {
             var username = $(this).find(".chat-title").text();
             var message = $(this).find(".chat-msg").text();
             var timestamp = $(this).find(".chat-time").text();
-
-            // Update the chat content
-       
 
             // Update the chat header
             $(".chat-header h4").text(username);
         });
     });
 </script>
-
-
-
 </body>
 
 

@@ -114,39 +114,7 @@ if ($result->num_rows > 0) {
 
 				</div>
 			  
-			  <div class="row">
-			    <div class="col-12 col-xl-8 d-flex">
-				  <div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="" id="chart5"></div>
-						</div>
-					</div>
-				</div>
-				<div class="col-12 col-xl-4 d-flex">
-				  <div class="card radius-10 w-100">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-									<div>
-										<h5 class="mb-1">Online Students</h5>
-									</div>
-									<div class="font-22 ms-auto"><i class="bx bx-dots-horizontal-rounded"></i>
-									</div>
-								</div>
-							<div class="mt-4" id="onlinestudent"></div>
-							<div class="d-flex align-items-center">
-									<div>
-												<h2 class="mb-0"><?php echo $online_count; ?></h2>
-										<p class="mb-0">/<?php echo $total_students; ?> Students</p>
-									</div>
-									<div class="ms-auto d-flex align-items-center border radius-10 px-2">
-									  <i class='bx bxs-checkbox font-22 me-1 text-primary'></i><span>Online</span>
-									</div>
-							  </div>
-						</div>
-					</div>
-				</div>
-				
-			  </div>
+		
 			  	  <div class="row">
 					    <div class="col-8">
 						<div class="card">
@@ -195,6 +163,39 @@ window.onload = function() {
     }
 };
 </script>
+	  <div class="row">
+			    <div class="col-12 col-xl-8 d-flex">
+				  <div class="card radius-10 w-100">
+						<div class="card-body">
+							<div class="" id="chart5"></div>
+						</div>
+					</div>
+				</div>
+				<div class="col-12 col-xl-4 d-flex">
+				  <div class="card radius-10 w-100">
+						<div class="card-body">
+							<div class="d-flex align-items-center">
+									<div>
+										<h5 class="mb-1">Online Students</h5>
+									</div>
+									<div class="font-22 ms-auto"><i class="bx bx-dots-horizontal-rounded"></i>
+									</div>
+								</div>
+							<div class="mt-4" id="onlinestudent"></div>
+							<div class="d-flex align-items-center">
+									<div>
+												<h2 class="mb-0"><?php echo $online_count; ?></h2>
+										<p class="mb-0">/<?php echo $total_students; ?> Students</p>
+									</div>
+									<div class="ms-auto d-flex align-items-center border radius-10 px-2">
+									  <i class='bx bxs-checkbox font-22 me-1 text-primary'></i><span>Online</span>
+									</div>
+							  </div>
+						</div>
+					</div>
+				</div>
+				
+			  </div>
 						  </div>
 					  </div>
 					    	  <div class="row">
