@@ -26,7 +26,7 @@ include('session.php');
 	<link href="assets/css/app.css" rel="stylesheet">
 	<link href="assets/css/icons.css" rel="stylesheet">
 
-		<script src="assets/js/jquery.min.js"></script>
+	   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 	<script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
 	<script src="assets/plugins/metismenu/js/metisMenu.min.js"></script>
 	<script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
@@ -36,7 +36,37 @@ include('session.php');
 	<link rel="stylesheet" href="assets/css/header-colors.css" />
 	<title>Campus Connect | Administrator</title>
 </head>
+   <script>
+        $(document).ready(function () {
+    $(".toggle-icon").click(function () {
+        if ($(".wrapper").hasClass("toggled")) {
+            // unpin sidebar when hovered
+            $(".wrapper").removeClass("toggled");
+            $(".sidebar-wrapper").unbind("mouseenter mouseleave");
+        } else {
+            $(".wrapper").addClass("toggled");
+            $(".sidebar-wrapper").on({
+                mouseenter: function () {
+                    $(".wrapper").addClass("sidebar-hovered");
+                },
+                mouseleave: function () {
+                    $(".wrapper").removeClass("sidebar-hovered");
+                }
+            });
+        }
+    });
+    	$(".mobile-toggle-menu").on("click", function () {
+		$(".wrapper").addClass("toggled");
+	});
+	$(".chat-toggle-btn").on("click", function () {
+		$(".chat-wrapper").toggleClass("chat-toggled");
+	});
+	$(".chat-toggle-btn-mobile").on("click", function () {
+		$(".chat-wrapper").removeClass("chat-toggled");
+	});
+});
 
+    </script>
 <body>
 	<!--wrapper-->
 	<div class="wrapper">

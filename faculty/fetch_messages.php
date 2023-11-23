@@ -7,7 +7,7 @@ if (isset($_POST['receiverId']) && !empty($_POST['receiverId'])) {
     // Your SQL query to fetch messages based on receiverId and currentUserId
     $messagesQuery = "SELECT * FROM messages WHERE (sender_id = '$currentUserId' AND receiver_id = '$receiverId') OR (sender_id = '$receiverId' AND receiver_id = '$currentUserId') ORDER BY timestamp ASC";
     $messagesResult = $con->query($messagesQuery);
-    $messagesQueryUpdate = "UPDATE messages set isRead = '1' WHERE (sender_id = '$currentUserId' AND receiver_id = '$receiverId') OR (sender_id = '$receiverId' AND receiver_id = '$currentUserId') ";
+    $messagesQueryUpdate = "UPDATE messages set isRead = '1' WHERE sender_id = '$receiverId' AND receiver_id = '$currentUserId' ";
     $messagesResultupdate = $con->query($messagesQueryUpdate);
     if (!$messagesResultupdate) {
     echo "Update failed: " . $con->error;

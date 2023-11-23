@@ -378,6 +378,7 @@ $(function () {
     }]
 });
 
+	
 	// chart 6
 	var options = {
 		chart: {
@@ -462,7 +463,7 @@ $(function () {
 		},
 		labels: ['Reached'],
 	}
-	var chart = new ApexCharts(document.querySelector("#chart6"), options);
+	var chart = new ApexCharts(document.querySelector("#"), options);
 	chart.render();
 	
 	

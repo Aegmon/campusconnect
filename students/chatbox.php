@@ -74,46 +74,18 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['search'])) {
 // Execute the query and store the result in $result
 $result = $con->query($query);
 
-// Set the initial value of $activeUserId
-$activeUserId = 0;
 
-// Your code to get the most recent chat user ID
-$queryRecentChat = "SELECT sender_id, receiver_id FROM messages ORDER BY timestamp DESC LIMIT 1";
-$resultRecentChat = $con->query($queryRecentChat);
-
-// Check if the query returns any rows
-if ($resultRecentChat->num_rows > 0) {
-    // Fetch the data from the most recent chat
-    $recentChatData = $resultRecentChat->fetch_assoc();
-
-    // Determine the active user based on the most recent chat
-    $activeUserId = ($recentChatData['sender_id'] == $currentUserId) ? $recentChatData['receiver_id'] : $recentChatData['sender_id'];
-}
-
-
-
-// Check if the query returns any rows
 if ($result->num_rows > 0) {
     // Loop through each row
     while ($row = $result->fetch_assoc()) {
         echo '<div class="list-group list-group-flush">';
         
-        // Check if the current user is the one displayed in the chat content
-        $isActiveUser = ($row['userID'] == $activeUserId);
+
 
         // Your code to get the count of unread messages for the current user
-$queryUnreadCount = "SELECT SUM(unreadCount) AS totalUnreadCount
-                    FROM (
-                        SELECT COUNT(*) AS unreadCount 
-                        FROM messages 
-                        WHERE (receiver_id = {$row['userID']} AND isRead = 0)
-                        
-                        UNION ALL
-                        
-                        SELECT COUNT(*) AS unreadCount 
-                        FROM messages 
-                        WHERE (sender_id = {$row['userID']} AND isRead = 0)
-                    ) AS subquery";
+$queryUnreadCount = "SELECT COUNT(*) AS unreadCount 
+                    FROM messages 
+                    WHERE sender_id = {$row['userID']} AND isRead = 0";
 
 
    $resultUnreadCount = $con->query($queryUnreadCount);
@@ -126,8 +98,7 @@ if ($resultUnreadCount === false) {
     $unreadCountData = $resultUnreadCount->fetch_assoc();
 
     if ($unreadCountData !== null) {
-        $totalUnreadCount = $unreadCountData['totalUnreadCount'];
-        
+        $totalUnreadCount = $unreadCountData['unreadCount'];
         $hasUnreadMessages = ($totalUnreadCount > 0);
     } else {
         // Handle the case when there are no results
@@ -139,8 +110,8 @@ if ($resultUnreadCount === false) {
 
 
         // Add a CSS class based on whether there are unread messages
-        $cssClass = $isActiveUser ? 'list-group-item ' : 'list-group-item';
-        $cssClass .= $hasUnreadMessages ? ' ' : ' has-unread-messages';
+        $cssClass = $row['userID'] ? ' list-group-item ' : ' list-group-item active';
+        $cssClass .= $hasUnreadMessages ? ' has-unread-messages' : ' ';
 
         echo '<a href="javascript:;" class="' . $cssClass . '" onclick="setReceiverId(' . $row['userID'] . ')">'; // Pass the userID as the receiverId
         echo '<div class="d-flex">';
@@ -155,7 +126,7 @@ if ($resultUnreadCount === false) {
         } elseif ($row['usertype'] == 'guidance') {
             echo '<h6 class="mb-0 chat-title">' . $row['counselor_fname'] . ' ' . $row['counselor_lname'] . ' (Counselor)</h6>';
         }
-    echo '<p class="mb-0 chat-msg">' . ($hasUnreadMessages ? 'No new messages' : 'Unread messages') . '</p>';
+    echo '<p class="mb-0 chat-msg">' . ($hasUnreadMessages ? 'Unread messages' : 'No new messages') . '</p>';
         echo '</div>';
         echo '<div class="chat-time">' . $row['lastlogin'] . '</div>';
         echo '</div>';

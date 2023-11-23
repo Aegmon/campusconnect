@@ -26,29 +26,69 @@ date_default_timezone_set("Asia/Manila");
 	<link href="assets/css/app.css" rel="stylesheet">
 	<link href="assets/css/icons.css" rel="stylesheet">
 
-	
+		   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 	<!-- Theme Style CSS -->
 	<link rel="stylesheet" href="assets/css/dark-theme.css" />
 	<link rel="stylesheet" href="assets/css/semi-dark.css" />
 	<link rel="stylesheet" href="assets/css/header-colors.css" />
 	<title>Campus Connect | Faculty</title>
 	<style>
-    @keyframes shake {
-        0%, 100% {
+    @keyframes moveIcon {
+          0%, 100% {
             transform: translateX(0);
+            color: white;
         }
-        10%, 30%, 50%, 70%, 90% {
+        25%, 75% {
             transform: translateX(-5px);
+            color: #00ff00; /* Green color */
         }
-        20%, 40%, 60%, 80% {
+        50% {
             transform: translateX(5px);
+            color: white;
         }
     }
 
-    .shake-animation:hover {
-        animation: shake 0.5s;
+    .moving-icon {
+        animation: moveIcon 0.5s infinite;  /* You can adjust the duration and other properties */
+         color: green;
     }
+
+.list-group-item.has-unread-messages {
+    font-weight: bold; /* Add your preferred styling for unread messages */
+    color: #ff0000; /* Add your preferred color for unread messages */
+}
 </style>
+   <script>
+        $(document).ready(function () {
+    $(".toggle-icon").click(function () {
+        if ($(".wrapper").hasClass("toggled")) {
+            // unpin sidebar when hovered
+            $(".wrapper").removeClass("toggled");
+            $(".sidebar-wrapper").unbind("mouseenter mouseleave");
+        } else {
+            $(".wrapper").addClass("toggled");
+            $(".sidebar-wrapper").on({
+                mouseenter: function () {
+                    $(".wrapper").addClass("sidebar-hovered");
+                },
+                mouseleave: function () {
+                    $(".wrapper").removeClass("sidebar-hovered");
+                }
+            });
+        }
+    });
+    	$(".mobile-toggle-menu").on("click", function () {
+		$(".wrapper").addClass("toggled");
+	});
+	$(".chat-toggle-btn").on("click", function () {
+		$(".chat-wrapper").toggleClass("chat-toggled");
+	});
+	$(".chat-toggle-btn-mobile").on("click", function () {
+		$(".chat-wrapper").removeClass("chat-toggled");
+	});
+});
+
+    </script>
 </head>
 
 <body>
@@ -101,13 +141,40 @@ date_default_timezone_set("Asia/Manila");
 					</a>
 				</li>
               -->
-                	<li>
-					<a href="chatbox.php">
-						<div class="parent-icon"><i class='bx bx-chat' ></i>
-						</div>
-						<div class="menu-title">Chat Box</div>
-					</a>
-				</li>
+                			 <li>
+    <a href="chatbox.php">
+        <div class="parent-icon"><i class='bx bx-chat'></i></div>
+        <div class="menu-title">Chat Box</div>
+        <?php
+        // Your code to count unread messages for the current user
+        $queryUnreadCount = "SELECT COUNT(*) AS unreadCount 
+                            FROM messages 
+                            WHERE receiver_id = $currentUserId AND isRead = 0";
+
+        $resultUnreadCount = $con->query($queryUnreadCount);
+
+        // Check if the query execution was successful
+        if ($resultUnreadCount !== false) {
+            $unreadCountData = $resultUnreadCount->fetch_assoc();
+
+            if ($unreadCountData !== null) {
+                $unreadCount = $unreadCountData['unreadCount'];
+
+                // Display the count only if there are unread messages
+                if ($unreadCount > 0) {
+                    echo '<span class="alert-count">' . $unreadCount . '</span>';
+                }
+            } else {
+                // Handle the case when there are no results
+                echo '<span class="alert-count">0</span>';
+            }
+        } else {
+            echo "Error in query: " . $con->error;
+        }
+        ?>
+    </a>
+</li>
+
 			
 				 	<!-- <li>
 					<a href="post.php">

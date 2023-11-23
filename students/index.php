@@ -343,7 +343,8 @@ echo $formattedStartTime . ' - ' . $formattedEndTime;
 <?php
 
 $query = "SELECT * FROM ins_consult ic 
-JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id order by ic.date  desc";
+JOIN faculty_info fi ON ic.faculty_id = fi.faculty_id 
+ORDER BY FIELD(ic.c_status, 'Ongoing', 'Cancelled'), ic.date  desc";
 
 $result = $con->query($query);
 
@@ -495,4 +496,29 @@ function likePost(postID) {
 	<script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
 	<!--app JS-->
 	<script src="assets/js/app.js"></script>
+    <script>
+        $(document).ready(function () {
+    $(".toggle-icon").click(function () {
+        if ($(".wrapper").hasClass("toggled")) {
+            // unpin sidebar when hovered
+            $(".wrapper").removeClass("toggled");
+            $(".sidebar-wrapper").unbind("mouseenter mouseleave");
+        } else {
+            $(".wrapper").addClass("toggled");
+            $(".sidebar-wrapper").on({
+                mouseenter: function () {
+                    $(".wrapper").addClass("sidebar-hovered");
+                },
+                mouseleave: function () {
+                    $(".wrapper").removeClass("sidebar-hovered");
+                }
+            });
+        }
+    });
+    	$(".mobile-toggle-menu").on("click", function () {
+		$(".wrapper").addClass("toggled");
+	});
+});
+
+    </script>
 </html>
