@@ -1,53 +1,136 @@
 <?php
 include('session.php');
 
-// Function to execute a SQL query and fetch the result
-function fetchData($query, $con) {
-    $result = $con->query($query);
-
-    if ($result) {
-        $data = $result->fetch_assoc();
-        $result->free_result();
-        return $data;
-    } else {
-        return false;
-    }
+function getCountForToday($table, $dateField, $userIdField, $currentUserId)
+{
+    global $con;
+    $today = date("Y-m-d");
+    $sql = "SELECT COUNT(*) as count FROM $table WHERE DATE($dateField) = '$today' AND $userIdField = $currentUserId";
+    $result = $con->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['count'];
 }
 
-// Fetch data for today
-// Fetch data for today for a specific user
-$todayLikes = fetchData("SELECT COUNT(*) AS today_likes FROM posts WHERE DATE(post_date) = CURDATE() AND likes = 1 AND user_id = '$currentUserId';", $con);
-$todayPosts = fetchData("SELECT COUNT(*) AS today_posts FROM posts WHERE DATE(post_date) = CURDATE() AND user_id = '$currentUserId';", $con);
-$todayReplies = fetchData("SELECT COUNT(*) AS today_replies FROM post_replies WHERE DATE(reply_date) = CURDATE() AND user_id = '$currentUserId';", $con);
+function getCountPerWeek($table, $dateField, $userIdField, $currentUserId)
+{
+    global $con;
+    $currentMonth = date("m");
 
-// Fetch data for this week for a specific user
-$weekLikes = fetchData("SELECT COUNT(*) AS week_likes FROM posts WHERE WEEK(post_date) = WEEK(NOW()) AND likes = 1 AND user_id = '$currentUserId';", $con);
-$weekPosts = fetchData("SELECT COUNT(*) AS week_posts FROM posts WHERE WEEK(post_date) = WEEK(NOW()) AND user_id = '$user_id';", $con);
-$weekReplies = fetchData("SELECT COUNT(*) AS week_replies FROM post_replies WHERE WEEK(reply_date) = WEEK(NOW()) AND user_id = '$currentUserId';", $con);
+    $sql = "SELECT DAY($dateField) as day, COUNT(*) as count FROM $table WHERE MONTH($dateField) = $currentMonth AND $userIdField = $currentUserId GROUP BY day";
+    $result = $con->query($sql);
 
-// Fetch data for this month for a specific user
-$monthLikes = fetchData("SELECT COUNT(*) AS month_likes FROM posts WHERE MONTH(post_date) = MONTH(NOW()) AND likes = 1 AND user_id = '$currentUserId';", $con);
-$monthPosts = fetchData("SELECT COUNT(*) AS month_posts FROM posts WHERE MONTH(post_date) = MONTH(NOW()) AND user_id = '$currentUserId';", $con);
-$monthReplies = fetchData("SELECT COUNT(*) AS month_replies FROM post_replies WHERE MONTH(reply_date) = MONTH(NOW()) AND user_id = '$currentUserId';", $con);
+    $counts = array();
+    $weekLabels = array();
+
+    while ($row = $result->fetch_assoc()) {
+        $day = $row['day'];
+        $weekNumber = ceil($day / 7);
+        $weekLabels[] = "Week " . $weekNumber;
+        $counts[$weekNumber] = $row['count'];
+    }
+
+    // Fill in missing weeks with zero counts
+    for ($i = 1; $i <= 4; $i++) {
+        if (!isset($counts[$i])) {
+            $weekLabels[] = "Week " . $i;
+            $counts[$i] = 0;
+        }
+    }
+
+    // Sort the labels to ensure correct order
+    sort($weekLabels);
+
+    return array("labels" => $weekLabels, "counts" => $counts);
+}
+
+function getCountPerMonth($table, $dateField, $userIdField, $currentUserId)
+{
+    global $con;
+    $sql = "SELECT MONTH($dateField) as month, COUNT(*) as count FROM $table WHERE $userIdField = $currentUserId GROUP BY month";
+    $result = $con->query($sql);
+
+    $counts = array();
+    $monthLabels = array();
+
+    for ($i = 1; $i <= 12; $i++) {
+        $monthName = date("M", mktime(0, 0, 0, $i, 10));
+        $monthLabels[] = $monthName;
+        $counts[$monthName] = 0;
+    }
+
+    while ($row = $result->fetch_assoc()) {
+        $monthNumber = $row['month'];
+        $monthName = date("M", mktime(0, 0, 0, $monthNumber, 10));
+
+        $monthLabels[] = $monthName;
+        $counts[$monthName] += $row['count'];
+    }
+
+    // Remove duplicate labels
+    $monthLabels = array_unique($monthLabels);
+
+    return array("labels" => $monthLabels, "counts" => $counts);
+}
+
+function getCountWithUserJoin($table, $dateField, $userIdField, $currentUserId)
+{
+    global $con;
+    $sql = "SELECT COUNT(*) as count FROM $table 
+            INNER JOIN posts ON posts.post_id = post_replies.post_id 
+            WHERE $dateField = '$today' AND $userIdField = $currentUserId";
+    $result = $con->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['count'];
+}
+
+$today = date("M d, Y");
+
+// Likes data for today
+// Likes data for today
+$likesToday = getCountForToday('posts', 'post_date', 'user_id', $currentUserId);
 
 
-// Prepare data for JSON response
-$responseData = [
-    'today_likes' => $todayLikes['today_likes'],
-    'today_posts' => $todayPosts['today_posts'],
-    'today_replies' => $todayReplies['today_replies'],
-    'week_likes' => $weekLikes['week_likes'],
-    'week_posts' => $weekPosts['week_posts'],
-    'week_replies' => $weekReplies['week_replies'],
-    'month_likes' => $monthLikes['month_likes'],
-    'month_posts' => $monthPosts['month_posts'],
-    'month_replies' => $monthReplies['month_replies'],
-];
+// Likes data for week
+$weekDataLikes = getCountPerWeek('posts', 'post_date', 'user_id', $currentUserId);
+$likesWeek = $weekDataLikes['counts'];
+$weekLabels = $weekDataLikes['labels'];
 
-// Output JSON response
-header('Content-Type: application/json');
-echo json_encode($responseData);
+// Likes data for month
+$monthDataLikes = getCountPerMonth('posts', 'post_date', 'user_id', $currentUserId);
+$likesMonth = $monthDataLikes['counts'];
+$monthLabels = $monthDataLikes['labels'];
 
-// Close the database conection
-$con->close();
+// Replies data for today
+$replyToday = getCountForToday('post_replies', 'reply_date', 'user_id', $currentUserId);
+
+
+// Replies data for week
+$weekDataReplies = getCountPerWeek('post_replies', 'reply_date', 'user_id', $currentUserId);
+$replyWeek = $weekDataReplies['counts'];
+
+// Replies data for month
+$monthDataReplies = getCountPerMonth('post_replies', 'reply_date', 'user_id', $currentUserId);
+$replyMonth = $monthDataReplies['counts'];
+
+// Posts data for today
+$postToday = getCountForToday('posts', 'post_date', 'user_id', $currentUserId);
+
+// Posts data for week
+$weekDataPosts = getCountPerWeek('posts', 'post_date', 'user_id', $currentUserId);
+$postWeek = $weekDataPosts['counts'];
+
+// Posts data for month
+$monthDataPosts = getCountPerMonth('posts', 'post_date', 'user_id', $currentUserId);
+$postMonth = $monthDataPosts['counts'];
+// Now you have the data for likes, replies, and posts for today, week, and month, along with dynamically generated labels.
+$intervalLabelsToday = [];
+
+// Labels for every 6 hours
+for ($i = 0; $i < 24; $i += 6) {
+    $startHour = sprintf("%02d:00", $i);
+    $endHour = sprintf("%02d:59", $i + 5);
+    $intervalLabelsToday[] = "$startHour - $endHour";
+}
+
 ?>
+

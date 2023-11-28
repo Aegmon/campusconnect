@@ -1,7 +1,8 @@
 
 <?php
 include("sidebar.php");
-
+include("getdata.php");
+include('consultationdata.php');
 ?>
 
         
@@ -216,189 +217,322 @@ include("sidebar.php");
 
 
 // Fetch and organize the data from your server (replace with your actual PHP script path)
-fetch('getdata.php')
-  .then(response => response.json())
-  .then(data => {
-    // Extract data for today
-    const todayLikes = data.today_likes;
-    const todayPosts = data.today_posts;
-    const todayReplies = data.today_replies;
-
-    // Extract data for this week
-    const weekLikes = data.week_likes;
-    const weekPosts = data.week_posts;
-    const weekReplies = data.week_replies;
-
-    // Extract data for this month
-    const monthLikes = data.month_likes;
-    const monthPosts = data.month_posts;
-    const monthReplies = data.month_replies;
-
-    // Update the chart options with the fetched data
-    updateChartOptions(todayLikes, todayPosts, todayReplies, '#chart', 'Day');
-    updateChartOptions(weekLikes, weekPosts, weekReplies, '#chart1', 'Week');
-    updateChartOptions(monthLikes, monthPosts, monthReplies, '#chart2', 'Month');
-  })
-  .catch(error => console.error('Error fetching data:', error));
 
 
 
-
-// Function to update monthly chart options dynamically
-function updateChartOptions(likes, posts, replies, chartId, timeUnit) {
-  var options = {
-    series: [
-      {
+ var options = {
+    series: [{
         name: 'Likes',
-        data: [Math.round(likes)], // Round the value to the nearest whole number
-      },
-      {
-        name: 'Comments',
-        data: [Math.round(replies)], // Round the value to the nearest whole number
-      },
-      {
+        data: <?php echo json_encode($likesToday); ?>
+    }, {
+        name: 'Reply',
+        data: <?php echo json_encode($replyToday); ?>
+    }, {
         name: 'Post',
-        data: [Math.round(posts)], // Round the value to the nearest whole number
-      },
-    ],
+        data: <?php echo json_encode($postToday); ?>
+    }],
     chart: {
-      foreColor: '#9ba7b2',
-      type: 'bar',
-      height: 360,
+        type: 'bar',
+        height: 350
     },
     plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '55%',
-        endingShape: 'rounded',
-      },
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+        },
     },
     dataLabels: {
-      enabled: false,
+        enabled: false
     },
     stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent'],
+        show: true,
+        width: 2,
+        colors: ['transparent']
     },
-    title: {
-      text: `Daily Engagements - ${timeUnit}`,
-      align: 'left',
-      style: {
-        fontSize: '14px',
-      },
-    },
-    colors: ["#29cc39", '#8833ff', '#e62e2e'],
     xaxis: {
-      categories: [timeUnit],
+        categories: <?php echo json_encode($intervalLabelsToday); ?>,
     },
     yaxis: {
-      labels: {
-        formatter: function (value) {
-          return Math.round(value); // Format y-axis labels as whole numbers
+        labels: {
+            formatter: function(val) {
+                return parseInt(val);
+            }
         }
-      }
     },
     fill: {
-      opacity: 1,
+        opacity: 1
     },
-  };
+};
 
-  var chart = new ApexCharts(document.querySelector(chartId), options);
-  chart.render();
-}
+var chart = new ApexCharts(document.querySelector("#chart"), options);
+chart.render();
 
-
-    ////// Consultation
-
-   fetch('consultationdata.php')
-  .then(response => response.json())
-  .then(data => {
-    // Extract data for today
-    const todayCompleted = data.today_consultation_status.today_completed;
-    const todayPending = data.today_consultation_status.today_pending;
-    const todayRejected = data.today_consultation_status.today_rejected;
-
-    // Extract data for this week
-    const weekCompleted = data.week_consultation_status.week_completed;
-    const weekPending = data.week_consultation_status.week_pending;
-    const weekRejected = data.week_consultation_status.week_rejected;
-
-    // Extract data for this month
-    const monthCompleted = data.month_consultation_status.month_completed;
-    const monthPending = data.month_consultation_status.month_pending;
-    const monthRejected = data.month_consultation_status.month_rejected;
-
-    // Update the chart options with the fetched data
-    updateConsultationStatusChart(todayCompleted, todayPending, todayRejected, '#chart3', 'Daily');
-    updateConsultationStatusChart(weekCompleted, weekPending, weekRejected, '#chart4', 'Weekly');
-    updateConsultationStatusChart(monthCompleted, monthPending, monthRejected, '#chart5', 'Monthly');
-  })
-  .catch(error => console.error('Error fetching data:', error));
-
-// Function to update consultation status chart options dynamically
-function updateConsultationStatusChart(completed, pending, rejected, chartId, timeUnit) {
+      
   var options = {
-    series: [
-      {
-        name: 'Completed',
-        data: [Math.round(completed)],
-      },
-      {
-        name: 'Pending',
-        data: [Math.round(pending)],
-      },
-      {
-        name: 'Rejected',
-        data: [Math.round(rejected)],
-      },
-    ],
+    series: [{
+        name: 'Likes',
+        data: [<?php echo implode(",", $likesWeek); ?>]
+    }, {
+        name: 'Reply',
+        data: [<?php echo implode(",", $replyWeek); ?>]
+    }, {
+        name: 'Post',
+        data: [<?php echo implode(",", $postWeek); ?>]
+    }],
     chart: {
-      foreColor: '#9ba7b2',
-      type: 'bar',
-      height: 360,
+        type: 'bar',
+        height: 350
     },
     plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '55%',
-        endingShape: 'rounded',
-      },
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+        },
     },
     dataLabels: {
-      enabled: false,
+        enabled: false
     },
     stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent'],
+        show: true,
+        width: 2,
+        colors: ['transparent']
     },
-    title: {
-      text: `Consultation Status - ${timeUnit}`,
-      align: 'left',
-      style: {
-        fontSize: '14px',
-      },
-    },
-    colors: ["#29cc39", '#8833ff', '#e62e2e'],
     xaxis: {
-      categories: [timeUnit],
+        categories: <?php echo json_encode($weekLabels); ?>
     },
     yaxis: {
-      labels: {
-        formatter: function (value) {
-          return Math.round(value); // Format y-axis labels as whole numbers
+        labels: {
+            formatter: function(val) {
+                return parseInt(val);
+            }
         }
-      }
     },
     fill: {
-      opacity: 1,
+        opacity: 1
     },
-  };
+};
 
-  var chart = new ApexCharts(document.querySelector(chartId), options);
-  chart.render();
-}
+var chart = new ApexCharts(document.querySelector("#chart1"), options);
+chart.render();
+
+  
+
+    var optionsMonth = {
+    series: [
+        {
+            name: 'Likes',
+            data: [<?php echo implode(",", $likesMonth); ?>]
+        },
+        {
+            name: 'Reply',
+            data: [<?php echo implode(",", $replyMonth); ?>]
+        },
+        {
+            name: 'Post',
+            data: [<?php echo implode(",", $postMonth); ?>]
+        }
+    ],
+    chart: {
+        type: 'bar',
+        height: 350
+    },
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '40%', // Adjust this value
+            endingShape: 'rounded'
+        },
+    },
+    dataLabels: {
+        enabled: false
+    },
+    stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent']
+    },
+    xaxis: {
+        categories: <?php echo json_encode($monthLabels); ?>
+    },
+    yaxis: {
+        labels: {
+            formatter: function(val) {
+                return parseInt(val);
+            }
+        }
+    },
+    fill: {
+        opacity: 1
+    }
+};
+
+var chartMonth = new ApexCharts(document.querySelector("#chart2"), optionsMonth);
+chartMonth.render();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var options = {
+    series: [{
+        name: 'Completed',
+        data: <?php echo json_encode($completedToday); ?>
+    }, {
+        name: 'Pending',
+        data: <?php echo json_encode($pendingToday); ?>
+    }, {
+        name: 'Rejected',
+        data: <?php echo json_encode($rejectedToday); ?>
+    }],
+    chart: {
+        type: 'bar',
+        height: 350
+    },
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+        },
+    },
+    dataLabels: {
+        enabled: false
+    },
+    stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent']
+    },
+    xaxis: {
+        categories: <?php echo json_encode($intervalLabelsToday); ?>,
+    },
+    yaxis: {
+        labels: {
+            formatter: function(val) {
+                return parseInt(val);
+            }
+        }
+    },
+    fill: {
+        opacity: 1
+    },
+};
+
+var chart = new ApexCharts(document.querySelector("#chart3"), options);
+chart.render();
+// Chart for Weekly Data
+var optionsWeek = {
+    series: [{
+        name: 'Completed',
+        data: <?php echo json_encode(array_values($completedWeek['counts'])); ?>
+    }, {
+        name: 'Pending',
+        data: <?php echo json_encode(array_values($pendingWeek['counts'])); ?>
+    }, {
+        name: 'Rejected',
+        data: <?php echo json_encode(array_values($rejectedWeek['counts'])); ?>
+    }],
+    chart: {
+        type: 'bar',
+        height: 350
+    },
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+        },
+    },
+    dataLabels: {
+        enabled: false
+    },
+    stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent']
+    },
+    xaxis: {
+        categories: <?php echo json_encode($weekLabels); ?>,
+    },
+    yaxis: {
+        labels: {
+            formatter: function(val) {
+                return parseInt(val);
+            }
+        }
+    },
+    fill: {
+        opacity: 1
+    },
+};
+
+var chartWeek = new ApexCharts(document.querySelector("#chart4"), optionsWeek);
+chartWeek.render();
+
+
+// Chart for Monthly Data
+var optionsMonth = {
+    series: [{
+        name: 'Completed',
+        data: <?php echo json_encode(array_values($completedMonth['counts'])); ?>
+    }, {
+        name: 'Pending',
+        data: <?php echo json_encode(array_values($pendingMonth['counts'])); ?>
+    }, {
+        name: 'Rejected',
+        data: <?php echo json_encode(array_values($rejectedMonth['counts'])); ?>
+    }],
+    chart: {
+        type: 'bar',
+        height: 350
+    },
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+        },
+    },
+    dataLabels: {
+        enabled: false
+    },
+    stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent']
+    },
+    xaxis: {
+        categories: <?php echo json_encode($completedMonth['labels']); ?>,
+    },
+    yaxis: {
+        labels: {
+            formatter: function(val) {
+                return parseInt(val);
+            }
+        }
+    },
+    fill: {
+        opacity: 1
+    },
+};
+
+var chartMonth = new ApexCharts(document.querySelector("#chart5"), optionsMonth);
+chartMonth.render();
+
+
     </script>
 </body>
 

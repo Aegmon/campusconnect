@@ -1,54 +1,122 @@
-<!-- index.html -->
+<?php
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Call Example</title>
-</head>
-<body>
-    <h1>Video Call Example</h1>
+include('session.php');
+function getCountForTodayByIntervalConsultation($table, $dateField, $userIdField, $currentUserId, $intervalHours,$status)
+{
+    global $con;
+    $today = date("Y-m-d");
 
-    <video id="localVideo" autoplay playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
+    $sql = "SELECT HOUR($dateField) DIV $intervalHours AS interval_slot, COUNT(*) as count 
+            FROM $table 
+            WHERE DATE($dateField) = '$today' AND $userIdField = $currentUserId AND c_status = '$status'
+            GROUP BY interval_slot";
 
-    <button onclick="startVideoCall()">Start Video Call</button>
+    $result = $con->query($sql);
 
-    <script>
-        async function startVideoCall() {
-            const userId = prompt('Enter your user ID:');
-            const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = localStream;
+    $counts = array_fill(0, 24 / $intervalHours, 0); // Initialize counts for each interval
 
-            const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-            const peerConnection = new RTCPeerConnection(configuration);
+    while ($row = $result->fetch_assoc()) {
+        $intervalSlot = $row['interval_slot'];
+        $counts[$intervalSlot] = $row['count'];
+    }
 
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    return $counts;
+}
 
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
+function getCountPerWeekConsultation($table, $dateField, $userIdField, $currentUserId,$status)
+{
+    global $con;
+    $currentMonth = date("m");
 
-            await fetch('signaling.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'storeOffer', userId: userId, offer: offer }),
-            });
+    $sql = "SELECT DAY($dateField) as day, COUNT(*) as count 
+            FROM $table 
+            WHERE MONTH($dateField) = $currentMonth AND $userIdField = $currentUserId AND c_status = '$status'
+            GROUP BY day";
 
-            const remoteUserId = prompt('Enter the remote user ID:');
-            const { offer: remoteOffer } = await fetch('signaling.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'getOffer', userId: remoteUserId }),
-            }).then(response => response.json());
+    $result = $con->query($sql);
 
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(remoteOffer));
+    $counts = array();
+    $weekLabels = array();
 
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
+    while ($row = $result->fetch_assoc()) {
+        $day = $row['day'];
+        $weekNumber = ceil($day / 7);
+        $weekLabels[] = "Week " . $weekNumber;
+        $counts[$weekNumber] = $row['count'];
+    }
 
-            console.log('Video call established!');
+    // Fill in missing weeks with zero counts
+    for ($i = 1; $i <= 4; $i++) {
+        if (!isset($counts[$i])) {
+            $weekLabels[] = "Week " . $i;
+            $counts[$i] = 0;
         }
-    </script>
-</body>
-</html>
+    }
+
+    // Sort the labels to ensure correct order
+    sort($weekLabels);
+
+    return array("labels" => $weekLabels, "counts" => $counts);
+}
+
+function getCountPerMonthConsultation($table, $dateField, $userIdField, $currentUserId,$status)
+{
+    global $con;
+    $sql = "SELECT MONTH($dateField) as month, COUNT(*) as count 
+            FROM $table 
+            WHERE $userIdField = $currentUserId AND c_status = '$status'
+            GROUP BY month";
+
+    $result = $con->query($sql);
+
+    $counts = array();
+    $monthLabels = array();
+
+    for ($i = 1; $i <= 12; $i++) {
+        $monthName = date("M", mktime(0, 0, 0, $i, 10));
+        $monthLabels[] = $monthName;
+        $counts[$monthName] = 0;
+    }
+
+    while ($row = $result->fetch_assoc()) {
+        $monthNumber = $row['month'];
+        $monthName = date("M", mktime(0, 0, 0, $monthNumber, 10));
+
+        $monthLabels[] = $monthName;
+        $counts[$monthName] += $row['count'];
+    }
+
+    // Remove duplicate labels
+    $monthLabels = array_unique($monthLabels);
+
+    return array("labels" => $monthLabels, "counts" => $counts);
+}
+
+$today = date("Y-m-d");
+
+// Consultations data for today with 6-hour intervals
+$consultationsTodayOngoing = getCountForTodayByIntervalConsultation('ins_consult', 'date', 'faculty_id', $faculty_id, 6,'Ongoing');
+$consultationsTodayCancelled = getCountForTodayByIntervalConsultation('ins_consult', 'date', 'faculty_id', $faculty_id, 6,'Cancelled');
+
+// Consultations data for week
+$weekDataConsultationsOngoing = getCountPerWeekConsultation('ins_consult', 'date', 'faculty_id', $faculty_id ,'Ongoing');
+$consultationsWeekOngoing = $weekDataConsultationsOngoing['counts'];
+$weekDataConsultationsCancelled = getCountPerWeekConsultation('ins_consult', 'date', 'faculty_id', $faculty_id ,'Cancelled');
+$consultationsWeekCancelled = $weekDataConsultationsCancelled['counts'];
+
+$monthDataConsultationsOngoing = getCountPerMonthConsultation('ins_consult', 'date', 'faculty_id', $faculty_id,'Ongoing');
+$consultationsMonthOngoing = $monthDataConsultationsOngoing['counts'];
+$monthDataConsultationsCancelled = getCountPerMonthConsultation('ins_consult', 'date', 'faculty_id', $faculty_id,'Cancelled');
+$consultationsMonthCancelled = $monthDataConsultationsCancelled['counts'];
+// Consultations data for month
+$consultationsWeekOngoing = array_values($consultationsWeekOngoing);
+$consultationsWeekCancelled = array_values($consultationsWeekCancelled);
+$consultationsMonthOngoing = array_values($consultationsMonthOngoing);
+$consultationsMonthCancelled = array_values($consultationsMonthCancelled);
+$weekLabels = $weekDataConsultationsCancelled['labels'];
+$monthLabels = $monthDataConsultationsCancelled['labels'];
+
+?>
+
+ <?php echo json_encode($consultationsTodayOngoing); ?>
+<?php echo json_encode($monthLabels); ?>,
